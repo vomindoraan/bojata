@@ -1,7 +1,8 @@
+import logging
 import re
 import tkinter as tk
+
 import serial
-import logging
 
 logging.basicConfig(format='[%(levelname)s] %(message)s', level=logging.INFO)
 
