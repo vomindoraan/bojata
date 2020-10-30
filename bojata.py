@@ -6,6 +6,7 @@ from serial import Serial, SerialException
 from serial.tools.list_ports import comports
 
 BAUD_RATE = 9600
+COMPORT_PATTERN = re.compile(r'/dev/ttyACM\d+|COM\d+')
 RGB_PATTERN = re.compile(r'(\d+),(\d+),(\d+)(?:,(\d+))?\r?\n')  # R,G,B[;I]
 TASK_DELAY = 0
 RECONNECT_DELAY = 1000
@@ -16,10 +17,11 @@ logging.basicConfig(format='[%(levelname)s] %(message)s', level=logging.INFO)
 ser = Serial(baudrate=BAUD_RATE)
 
 def serial_connect():
-    try:
-        ser.port = comports()[0].device
-    except IndexError as e:
+    """Open a serial connection on the first available appropriate comport."""
+    ports = [p.device for p in comports() if COMPORT_PATTERN.match(p.device)]
+    if not ports:
         raise SerialException("No serial device available")
+    ser.port = ports[0]
     ser.open()
     logging.info("Connected to serial device on %s at %d baud",
                  ser.port, BAUD_RATE)
