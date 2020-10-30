@@ -3,19 +3,21 @@ import re
 import tkinter as tk
 
 import serial
+from serial.tools.list_ports import comports
+
+BAUD_RATE = 9600
+RGB_PATTERN = re.compile(r'(\d+),(\d+),(\d+)(?:,(\d+))?\r?\n')  # R,G,B[;I]
+TASK_DELAY = 0
 
 logging.basicConfig(format='[%(levelname)s] %(message)s', level=logging.INFO)
 
 # Connect to serial device
-for p in range(1, 12):
-    try:
-        ser = serial.Serial(f'COM{p}', 9600)
-        logging.info("Connected to serial device on %s", ser.port)
-        break
-    except serial.SerialException:
-        continue
-else:
-    raise FileNotFoundError("No serial device found")
+try:
+    port = comports()[0].device
+    ser = serial.Serial(port, BAUD_RATE)
+    logging.info("Connected to serial device on %s at %d baud", port, BAUD_RATE)
+except (IndexError, serial.SerialException) as e:
+    raise FileNotFoundError("No serial device found") from e
 
 # Initialize GUI
 root = tk.Tk()
@@ -36,8 +38,6 @@ for i, c in enumerate(colors):
                             width=0, fill=c)
 root.update()
 
-PATTERN = re.compile(r'(\d+),(\d+),(\d+)(?:,(\d+))?\r?\n')  # R,G,B[;I]
-DELAY = 0
 
 def task():
     """Read RGB value from serial and display it on the screen."""
@@ -45,7 +45,7 @@ def task():
         line = ser.readline().decode('utf8')
         logging.debug(line)
 
-        if m := PATTERN.match(line):
+        if m := RGB_PATTERN.match(line):
             r, g, b, i = m.groups()
             r, g, b = map(int, (r, g, b))
 
@@ -65,8 +65,8 @@ def task():
     except Exception as e:
         logging.exception(e)
     finally:
-        root.after(DELAY, task)
+        root.after(TASK_DELAY, task)
 
-root.after(DELAY, task)  # Schedule first task
+root.after(TASK_DELAY, task)  # Schedule first task
 root.protocol('WM_DELETE_WINDOW', exit)  # Exit on close
 root.mainloop()  # Start main GUI loop
