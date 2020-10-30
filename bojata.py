@@ -24,6 +24,8 @@ def serial_connect():
     logging.info("Connected to serial device on %s at %d baud",
                  ser.port, BAUD_RATE)
 
+serial_connect()
+
 # Initialize GUI
 root = tk.Tk()
 root.title('bojata')
