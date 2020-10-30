@@ -2,22 +2,27 @@ import logging
 import re
 import tkinter as tk
 
-import serial
+from serial import Serial, SerialException
 from serial.tools.list_ports import comports
 
 BAUD_RATE = 9600
 RGB_PATTERN = re.compile(r'(\d+),(\d+),(\d+)(?:,(\d+))?\r?\n')  # R,G,B[;I]
 TASK_DELAY = 0
+RECONNECT_DELAY = 1000
 
 logging.basicConfig(format='[%(levelname)s] %(message)s', level=logging.INFO)
 
-# Connect to serial device
-try:
-    port = comports()[0].device
-    ser = serial.Serial(port, BAUD_RATE)
-    logging.info("Connected to serial device on %s at %d baud", port, BAUD_RATE)
-except (IndexError, serial.SerialException) as e:
-    raise FileNotFoundError("No serial device found") from e
+# Initialize serial connection
+ser = Serial(baudrate=BAUD_RATE)
+
+def serial_connect():
+    try:
+        ser.port = comports()[0].device
+    except IndexError as e:
+        raise SerialException("No serial device available")
+    ser.open()
+    logging.info("Connected to serial device on %s at %d baud",
+                 ser.port, BAUD_RATE)
 
 # Initialize GUI
 root = tk.Tk()
@@ -36,12 +41,13 @@ for i, c in enumerate(colors):
     canvas.create_rectangle(w_rgb, i*h_rgb,
                             w, (i+1)*h_rgb,
                             width=0, fill=c)
-root.update()
-
 
 def task():
     """Read RGB value from serial and display it on the screen."""
     try:
+        if not ser.is_open:
+            serial_connect()
+
         line = ser.readline().decode('utf8')
         logging.debug(line)
 
@@ -62,11 +68,19 @@ def task():
                                     w_rgb, h,
                                     width=0, fill=color)
             root.update()
-    except Exception as e:
-        logging.exception(e)
-    finally:
+    except SerialException:
+        ser.close()
+        root.after(RECONNECT_DELAY, task)
+        logging.warning("Serial device disconnected! Retrying in %g s...",
+                        RECONNECT_DELAY / 1000)
+    else:
         root.after(TASK_DELAY, task)
 
+def on_close():
+    """Close serial connection and exit script."""
+    ser.close()
+    exit()
+
 root.after(TASK_DELAY, task)  # Schedule first task
-root.protocol('WM_DELETE_WINDOW', exit)  # Exit on close
-root.mainloop()  # Start main GUI loop
+root.protocol('WM_DELETE_WINDOW', on_close)
+root.mainloop()
