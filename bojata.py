@@ -1,4 +1,5 @@
 import logging
+import os
 import re
 import tkinter as tk
 
@@ -11,17 +12,21 @@ RGB_PATTERN = re.compile(r'(\d+),(\d+),(\d+)(?:,(\d+))?\r?\n')  # R,G,B[;I]
 TASK_DELAY = 0
 RECONNECT_DELAY = 1000
 
-logging.basicConfig(format='[%(levelname)s] %(message)s', level=logging.INFO)
+logging.basicConfig(format='[%(levelname)s] %(message)s',
+                    level=os.getenv('LOGLEVEL', 'INFO').upper())
 
 # Initialize serial connection
 ser = Serial(baudrate=BAUD_RATE)
 
 def serial_connect():
-    """Open a serial connection on the first available appropriate comport."""
-    ports = [p.device for p in comports() if COMPORT_PATTERN.match(p.device)]
-    if not ports:
+    """Open a serial connection on the first available matching port."""
+    ports = [cp.device for cp in comports()]
+    matching_ports = [p for p in ports if COMPORT_PATTERN.match(p)]
+    logging.debug("All available ports: %s", ports)
+    logging.debug("Matching ports: %s", matching_ports)
+    if not matching_ports:
         raise SerialException("No serial device available")
-    ser.port = ports[0]
+    ser.port = matching_ports[0]
     ser.open()
     logging.info("Connected to serial device on %s at %d baud",
                  ser.port, BAUD_RATE)
