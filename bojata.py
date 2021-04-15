@@ -63,7 +63,7 @@ def task():
 
         # Discard buffered bytes if they are arriving too fast
         if ser.in_waiting > 0:
-            logging.warning("Discarding %d bytes", ser.in_waiting)
+            logging.info("Discarding %d bytes", ser.in_waiting)
             ser.reset_input_buffer()
 
         if m := RGB_PATTERN.match(line):
@@ -83,7 +83,7 @@ def task():
                                     w_rgb, h,
                                     width=0, fill=color)
             root.update()
-    except SerialException:
+    except (SerialException, OSError):
         ser.close()
         root.after(RECONNECT_DELAY, task)
         logging.warning("Serial device disconnected! Retrying in %g s...",
