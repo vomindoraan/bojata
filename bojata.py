@@ -13,7 +13,7 @@ RGB_PATTERN = re.compile(r'(\d+),(\d+),(\d+)(?:,(\d+))?\r?\n')  # R,G,B[;I]
 TASK_DELAY = 0
 RECONNECT_DELAY = 1000
 
-logging.basicConfig(format='[%(levelname)s] %(message)s',
+logging.basicConfig(format='[%(levelname)s] %(asctime)s - %(message)s',
                     level=os.getenv('LOGLEVEL', 'INFO').upper())
 
 # Initialize serial connection
@@ -58,13 +58,13 @@ def task():
         if not ser.is_open:
             serial_connect()
 
-        line = ser.readline().decode('utf8')
-        logging.debug("%sbuffer: %d", line, ser.in_waiting)
-
         # Discard buffered bytes if they are arriving too quickly
         if ser.in_waiting > 0:
             logging.info("Discarding %d buffered bytes", ser.in_waiting)
             ser.reset_input_buffer()
+
+        line = ser.readline().decode('utf8')
+        logging.debug("%sbuffer: %d", line, ser.in_waiting)
 
         if m := RGB_PATTERN.match(line):
             r, g, b, i = m.groups()
