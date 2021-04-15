@@ -6,7 +6,7 @@ import tkinter as tk
 from serial import Serial, SerialException
 from serial.tools.list_ports import comports
 
-BAUD_RATE = 9600
+BAUD_RATE = 115200
 COMPORT_PATTERN = re.compile(r'/dev/ttyACM\d+|COM\d+')
 RGB_PATTERN = re.compile(r'(\d+),(\d+),(\d+)(?:,(\d+))?\r?\n')  # R,G,B[;I]
 TASK_DELAY = 0

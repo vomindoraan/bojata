@@ -1,5 +1,7 @@
 #include <TFT_ILI9163C.h>
 
+#define BAUD_RATE 115200
+
 // TCS230 constants
 #define SENSOR_S0  3
 #define SENSOR_S1  4
@@ -48,7 +50,7 @@ void setup() {
     digitalWrite(SENSOR_S0, HIGH);
     digitalWrite(SENSOR_S1, LOW);
 
-    Serial.begin(9600);
+    Serial.begin(BAUD_RATE);
 
     tft.begin();
     tft.fillRect(86, 112, 43, 16, RED);
