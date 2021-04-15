@@ -1,6 +1,7 @@
 #include <TFT_ILI9163C.h>
 
-#define BAUD_RATE 115200
+#define BAUD_RATE  115200
+#define LOOP_DELAY 1
 
 // TCS230 constants
 #define SENSOR_S0  3
@@ -23,7 +24,6 @@
 #define B_MAX 80
 
 // TFT_ILI9163C constants
-#define TFT_RST 8
 #define TFT_A0  9
 #define TFT_CS  10
 
@@ -33,7 +33,7 @@
 #define GREEN 0x07E0
 #define WHITE 0xFFFF
 
-TFT_ILI9163C tft = TFT_ILI9163C(TFT_CS, TFT_A0, TFT_RST);
+TFT_ILI9163C tft = TFT_ILI9163C(TFT_CS, TFT_A0);
 
 inline uint16_t to_rgb565(uint8_t r8, uint8_t g8, uint8_t b8) {
     return ((r8 & 0xF8) << 8) | ((g8 & 0xFC) << 3) | ((b8 & 0xF8) >> 3);
@@ -84,7 +84,7 @@ void loop() {
 //    Serial.print(g6);
 //    Serial.print(" ");
 
-    // Set green filtered photodiodes to be read
+    // Set blue filtered photodiodes to be read
     digitalWrite(SENSOR_S2, LOW);
     digitalWrite(SENSOR_S3, HIGH);
     // Read output frequency
@@ -105,5 +105,6 @@ void loop() {
 //    Serial.println(rgb565, HEX);
     tft.fillRect(0, 0, 128, 112, rgb565);
 
-    delay(1);
+    delay(LOOP_DELAY);
+    Serial.flush();
 }
