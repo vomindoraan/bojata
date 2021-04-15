@@ -61,9 +61,9 @@ def task():
         line = ser.readline().decode('utf8')
         logging.debug("%sbuffer: %d", line, ser.in_waiting)
 
-        # Discard buffered bytes if they are arriving too fast
+        # Discard buffered bytes if they are arriving too quickly
         if ser.in_waiting > 0:
-            logging.info("Discarding %d bytes", ser.in_waiting)
+            logging.info("Discarding %d buffered bytes", ser.in_waiting)
             ser.reset_input_buffer()
 
         if m := RGB_PATTERN.match(line):
