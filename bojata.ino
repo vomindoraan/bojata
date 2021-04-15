@@ -96,12 +96,9 @@ void loop() {
 //    Serial.println();
 
     // Send 24-bit RGB888 value over serial
-    Serial.print(r8);
-    Serial.print(",");
-    Serial.print(g8);
-    Serial.print(",");
-    Serial.print(b8);
-    Serial.println();
+    char rgb888[12];
+    snprintf(rgb888, 12, "%d,%d,%d", r8, g8, b8);
+    Serial.println(rgb888);
 
     // Fill TFT screen with 16-bit RGB565 value
     uint16_t rgb565 = (r5 << 11) | (g6 << 5) | b5;
