@@ -7,15 +7,21 @@
 #define SENSOR_S3  6
 #define SENSOR_OUT 7
 
-#define R_MIN 400
-#define R_MAX 100
-#define G_MIN 500
-#define G_MAX 120
-#define B_MIN 400
-#define B_MAX 100
+//#define R_MIN 600
+//#define R_MAX 110
+//#define G_MIN 750
+//#define G_MAX 110
+//#define B_MIN 600
+//#define B_MAX 110
+#define R_MIN 600
+#define R_MAX 80
+#define G_MIN 750
+#define G_MAX 80
+#define B_MIN 600
+#define B_MAX 80
 
 // TFT_ILI9163C constants
-//#define TFT_RST 8
+#define TFT_RST 8
 #define TFT_A0  9
 #define TFT_CS  10
 
@@ -25,7 +31,7 @@
 #define GREEN 0x07E0
 #define WHITE 0xFFFF
 
-TFT_ILI9163C tft = TFT_ILI9163C(TFT_CS, TFT_A0);
+TFT_ILI9163C tft = TFT_ILI9163C(TFT_CS, TFT_A0, TFT_RST);
 
 inline uint16_t to_rgb565(uint8_t r8, uint8_t g8, uint8_t b8) {
     return ((r8 & 0xF8) << 8) | ((g8 & 0xFC) << 3) | ((b8 & 0xF8) >> 3);
@@ -45,9 +51,9 @@ void setup() {
     Serial.begin(9600);
 
     tft.begin();
-    tft.fillRect(0,  112, 43, 16, RED);
+    tft.fillRect(86, 112, 43, 16, RED);
     tft.fillRect(43, 112, 43, 16, GREEN);
-    tft.fillRect(86, 112, 43, 16, BLUE);
+    tft.fillRect(0,  112, 43, 16, BLUE);
 }
 
 void loop() {
@@ -62,6 +68,8 @@ void loop() {
     // Remap frequency to RGB888 and RGB565 ranges
     r8 = constrain(map(freq, R_MIN, R_MAX, 0, 255), 0, 255);
     r5 = constrain(map(freq, R_MIN, R_MAX, 0,  31), 0,  31);
+//    Serial.print(r5);
+//    Serial.print(" ");
 
     // Set green filtered photodiodes to be read
     digitalWrite(SENSOR_S2, HIGH);
@@ -71,6 +79,8 @@ void loop() {
     // Remap frequency to RGB888 and RGB565 ranges
     g8 = constrain(map(freq, G_MIN, G_MAX, 0, 255), 0, 255);
     g6 = constrain(map(freq, G_MIN, G_MAX, 0,  63), 0,  63);
+//    Serial.print(g6);
+//    Serial.print(" ");
 
     // Set green filtered photodiodes to be read
     digitalWrite(SENSOR_S2, LOW);
@@ -80,6 +90,8 @@ void loop() {
     // Remap frequency to RGB888 and RGB565 ranges
     b8 = constrain(map(freq, B_MIN, B_MAX, 0, 255), 0, 255);
     b5 = constrain(map(freq, B_MIN, B_MAX, 0,  31), 0,  31);
+//    Serial.print(b5);
+//    Serial.println();
 
     // Send 24-bit RGB888 value over serial
     Serial.print(r8);
@@ -91,6 +103,7 @@ void loop() {
 
     // Fill TFT screen with 16-bit RGB565 value
     uint16_t rgb565 = (r5 << 11) | (g6 << 5) | b5;
+//    Serial.println(rgb565, HEX);
     tft.fillRect(0, 0, 128, 112, rgb565);
 
     delay(1);
