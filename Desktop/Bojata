@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Bojata
+Comment=Na batko bojata
+Icon=/usr/share/pixmaps/openbox.xpm
+Exec=/home/pi/bojata/bojata.py
+Type=Application
+Terminal=true
+Encoding=UTF-8
+Path=/home/pi/bojata
+GenericName=Bojata by K&K
+X-KeepTerminal=true
