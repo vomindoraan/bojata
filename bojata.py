@@ -61,6 +61,11 @@ def task():
         line = ser.readline().decode('utf8')
         logging.debug("%sbuffer: %d", line, ser.in_waiting)
 
+        # Discard buffered bytes if they are arriving too fast
+        if ser.in_waiting > 0:
+            logging.warning("Discarding %d bytes", ser.in_waiting)
+            ser.reset_input_buffer()
+
         if m := RGB_PATTERN.match(line):
             r, g, b, i = m.groups()
             r, g, b = map(int, (r, g, b))
@@ -78,11 +83,6 @@ def task():
                                     w_rgb, h,
                                     width=0, fill=color)
             root.update()
-
-        # Discard buffered bytes if they are arriving too fast
-        if ser.in_waiting > 0:
-            logging.info("Discarding %d bytes", ser.in_waiting)
-            ser.reset_input_buffer()
     except SerialException:
         ser.close()
         root.after(RECONNECT_DELAY, task)
