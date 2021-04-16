@@ -6,7 +6,7 @@ import tkinter as tk
 import tkinter.font
 
 import cups
-from cups_notify import Subscriber
+import cups_notify as cupsn
 from PIL import Image, ImageDraw
 from serial import Serial, SerialException
 from serial.tools.list_ports import comports
@@ -40,8 +40,9 @@ def serial_connect():
 
 serial_connect()
 
-# Initialize connection to CUPS server
-conn = cups.Connection()
+# Initialize connections to CUPS server
+cups_conn = cups.Connection()
+cups_sub = cupsn.Subscriber()
 
 # Initialize GUI
 root = tk.Tk()
@@ -67,8 +68,6 @@ def create_outlined_text(x, y, *args, **kw):
     canvas.create_text(x+2, y+2, *args, **kw)
     kw['fill'] = 'white'
     canvas.create_text(x, y, *args, **kw)
-
-is_printing = False  # Global printing state flag
 
 def task():
     """Read RGB value from serial and display it on the screen."""
@@ -120,6 +119,10 @@ def task():
         if not is_printing:
             root.after(TASK_DELAY, task)
 
+# Global printing state
+is_printing = False
+job_ids = set()
+
 def start_printing(color):
     im = Image.new(mode='RGB', size=(992, 1403), color='white')  # A4 @ 120 PPI
     draw = ImageDraw.Draw(im)
@@ -129,15 +132,24 @@ def start_printing(color):
     draw.rectangle((240+480, 384+2*112, 240+512, 384+3*112), fill='#0000ff')
     im.save('print.png', 'PNG')
 
-    for printer_name in conn.getPrinters().keys():
-        conn.printFile(printer_name, 'print.png', '', {})
-
     global is_printing
     is_printing = True
 
-def on_print_done(evt):
+    cups_sub.subscribe(on_print_done, (cupsn.event.CUPS_EVT_JOB_COMPLETED,
+                                       cupsn.event.CUPS_EVT_JOB_STOPPED))
+    for printer_name in cups_conn.getPrinters().keys():
+        job_ids.add(cups_conn.printFile(printer_name, 'print.png', '', {}))
 
-    is_printing = False
+def on_print_done(evt):
+    logging.debug("Printing done event: %s", evt)
+
+    if evt.guid in job_ids:
+        job_ids.discard(evt.guid)
+
+    if not job_ids:
+        global is_printing
+        is_printing = False
+        root.after(TASK_DELAY, task)
 
 def on_close():
     """Close serial connection and exit script."""
