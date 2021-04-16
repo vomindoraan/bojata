@@ -3,16 +3,20 @@ import logging
 import os
 import re
 import tkinter as tk
+import tkinter.font
 
 from serial import Serial, SerialException
 from serial.tools.list_ports import comports
 
 BAUD_RATE = 115200
+TASK_DELAY = 0
+RECONNECT_DELAY = 1000
+
 COMPORT_PATTERN = re.compile(r'/dev/ttyACM\d+|COM\d+')
 PRINT_FLAG = "@"
 RGB_PATTERN = re.compile(rf'(\d+),(\d+),(\d+)(?:;(\d+))?({PRINT_FLAG})?\r?\n')  # R,G,B[;I]["@"]
-TASK_DELAY = 0
-RECONNECT_DELAY = 1000
+
+TEXT_FONT = tk.font.Font(family='Noto Sans', size=36, weight=tk.font.BOLD)
 
 logging.basicConfig(format='[%(levelname)s] %(asctime)s - %(message)s',
                     level=os.getenv('LOGLEVEL', 'INFO').upper())
@@ -49,8 +53,7 @@ w_rgb = w - w / 16
 h_rgb = h / 3
 colors = ('#ff0000', '#00ff00', '#0000ff')
 for i, c in enumerate(colors):
-    canvas.create_rectangle(w_rgb, i*h_rgb,
-                            w, (i+1)*h_rgb,
+    canvas.create_rectangle(w_rgb, i*h_rgb, w, (i+1)*h_rgb,
                             width=0, fill=c)
 
 printing = False
@@ -84,15 +87,14 @@ def task():
 
             # Draw colored area
             color = f'#{r:02x}{g:02x}{b:02x}'
-            canvas.create_rectangle(0, 0,
-                                    w_rgb, h,
+            canvas.create_rectangle(0, 0, w_rgb, h,
                                     width=0, fill=color)
 
             if pf is not None:
                 assert pf == PRINT_FLAG
                 printing = True
                 canvas.create_text(w/2, h/2,
-                                   text="PRINTING")
+                                   text="Printing...", font=TEXT_FONT)
 
             root.update()
     except (SerialException, OSError):
