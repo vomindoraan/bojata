@@ -13,7 +13,7 @@ from serial.tools.list_ports import comports
 BAUD_RATE = 115200
 TASK_DELAY = 0
 RECONNECT_DELAY = 1000
-PRINT_DELAY = 15000
+PRINT_DELAY = 20000
 
 COMPORT_PATTERN = re.compile(r'/dev/ttyACM\d+|COM\d+')
 PRINT_FLAG = '@'
