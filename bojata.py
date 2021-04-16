@@ -41,10 +41,15 @@ serial_connect()
 root = tk.Tk()
 root.title('bojata')
 root.attributes('-fullscreen', True)
-default_font = tk.font.nametofont('TkDefaultFont')
-default_font.configure(family='Noto Sans', size=36)
+tk.font.nametofont('TkDefaultFont').configure(size=36)
 canvas = tk.Canvas(root, borderwidth=0, highlightthickness=0)
 canvas.pack(expand=True, fill=tk.BOTH)
+
+def create_outlined_text(x, y, *args, **kw):
+    kw['fill'] = 'black'
+    canvas.create_text(x+2, y+2, *args, **kw)
+    kw['fill'] = 'white'
+    canvas.create_text(x, y, *args, **kw)
 
 # Draw RGB swatches on the right edge
 w = root.winfo_screenwidth()
@@ -93,10 +98,8 @@ def task():
             if pf is not None:
                 assert pf == PRINT_FLAG
                 printing = True
-                canvas.create_text(w/2+2, h/2+2,
-                                   text="Printing...", fill='black')
-                canvas.create_text(w/2, h/2,
-                                   text="Printing...", fill='white')
+                create_outlined_text(w_rgb/2, h/2,
+                                     text=f"Printing...\n{color}")
 
             root.update()
     except (SerialException, OSError):
