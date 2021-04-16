@@ -4,6 +4,7 @@
 #define LOOP_DELAY 1
 
 #define PRINT_PIN  8
+#define PRINT_FLAG "@"
 
 // TCS230 constants
 #define SENSOR_S0  3
@@ -99,14 +100,19 @@ void loop() {
 //    Serial.print(b5);
 //    Serial.println();
 
-    bool print = !digitalRead(PRINT_PIN);
-
-    // Send 24-bit RGB888 value over serial
+    // Format 24-bit RGB888 value as string
     char rgb888[13];
     snprintf(rgb888, 12, "%d,%d,%d", r8, g8, b8);
-    if (print) {
-        strcat(rgb888, "@");
+    // If print button was pressed, append print flag
+    static bool oldPrintState = HIGH;
+    bool printState = digitalRead(PRINT_PIN);
+    if (printState != oldPrintState) {
+        if (printState == LOW) {
+            strcat(rgb888, PRINT_FLAG);
+        }
+        oldPrintState = printState;
     }
+    // Send RGB888 value and (potentially) print flag over serial
     Serial.println(rgb888);
 
     // Fill TFT screen with 16-bit RGB565 value
