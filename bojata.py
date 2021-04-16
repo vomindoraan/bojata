@@ -6,7 +6,6 @@ import tkinter as tk
 import tkinter.font
 
 import cups
-import cups_notify as cupsn
 from PIL import Image, ImageDraw
 from serial import Serial, SerialException
 from serial.tools.list_ports import comports
@@ -14,11 +13,12 @@ from serial.tools.list_ports import comports
 BAUD_RATE = 115200
 TASK_DELAY = 0
 RECONNECT_DELAY = 1000
+PRINT_DELAY = 10000
 
 COMPORT_PATTERN = re.compile(r'/dev/ttyACM\d+|COM\d+')
 PRINT_FLAG = '@'
 RGB_PATTERN = re.compile(rf'(\d+),(\d+),(\d+)(?:;(\d+))?({PRINT_FLAG})?\r?\n')  # R,G,B[;I]["@"]
-PRINT_IMAGE_PATH = 'print.png'
+PRINT_FILENAME = 'print.png'
 
 logging.basicConfig(format='[%(levelname)s] %(asctime)s - %(message)s',
                     level=os.getenv('LOGLEVEL', 'INFO').upper())
@@ -107,57 +107,32 @@ def task():
                 create_outlined_text(w_rgb/2, h/2,
                                      text=f"Printing...\n{color}")
                 root.update()
+
                 start_printing(color)
+                root.after(PRINT_DELAY, task)
+                return
+
+        root.after(TASK_DELAY, task)
 
     except (SerialException, OSError):
         ser.close()
-        logging.warning("Serial device disconnected!")
-        if not is_printing:
-            logging.info("Retrying in %g s...", RECONNECT_DELAY / 1000)
-            root.after(RECONNECT_DELAY, task)
-    else:
-        if not is_printing:
-            root.after(TASK_DELAY, task)
-
-# Global printing state
-is_printing = False
-job_ids = set()
+        logging.warning("Serial device disconnected! Retrying in %g s...",
+                        RECONNECT_DELAY / 1000)
+        root.after(RECONNECT_DELAY, task)
 
 def start_printing(color):
-    logging.debug("Generating image for %s", color)
+    logging.debug("Generating image for %s...", color)
     im = Image.new(mode='RGB', size=(992, 1403), color='white')  # A4 @ 120 PPI
     draw = ImageDraw.Draw(im)
     draw.rectangle((240,     384,       240+480, 384+336),   fill=color)
     draw.rectangle((240+480, 384,       240+512, 384+112),   fill='#ff0000')
     draw.rectangle((240+480, 384+112,   240+512, 384+2*112), fill='#00ff00')
     draw.rectangle((240+480, 384+2*112, 240+512, 384+3*112), fill='#0000ff')
-    im.save(PRINT_IMAGE_PATH, 'PNG')
-    logging.debug("Image generated and saved to %s", PRINT_IMAGE_PATH)
+    im.save(PRINT_FILENAME, 'PNG')
 
-    global is_printing
-    is_printing = True
-    logging.info("Starting printing for %s", color)
-
-    for printer_name in cups_conn.getPrinters().keys():
-        job_ids.add(cups_conn.printFile(printer_name, PRINT_IMAGE_PATH, '', {}))
-
-def on_print_done(evt):
-    logging.debug("Printing done event: %s", evt)
-
-    if evt.guid in job_ids:
-        job_ids.discard(evt.guid)
-        logging.debug("Job %d completed. Remaining: %s", job_ids)
-
-    if not job_ids:
-        global is_printing
-        is_printing = False
-        logging.info("Finished printing for %s", color)
-        root.after(TASK_DELAY, task)
-
-# Initialize CUPS subscriber
-cups_sub = cupsn.Subscriber(cups_conn)
-cups_sub.subscribe(on_print_done, [cupsn.event.CUPS_EVT_JOB_COMPLETED,
-                                   cupsn.event.CUPS_EVT_JOB_STOPPED])
+    logging.info("Starting printing for %s...", color)
+    for printer in cups_conn.getPrinters().keys():
+        cups_conn.printFile(printer, PRINT_FILENAME, '', {})
 
 def on_close():
     """Close serial connection and exit script."""
