@@ -9,7 +9,8 @@ from serial.tools.list_ports import comports
 
 BAUD_RATE = 115200
 COMPORT_PATTERN = re.compile(r'/dev/ttyACM\d+|COM\d+')
-RGB_PATTERN = re.compile(r'(\d+),(\d+),(\d+)(?:,(\d+))?\r?\n')  # R,G,B[;I]
+PRINT_FLAG = "@"
+RGB_PATTERN = re.compile(rf'(\d+),(\d+),(\d+)(?:;(\d+))?({PRINT_FLAG})?\r?\n')  # R,G,B[;I]["@"]
 TASK_DELAY = 0
 RECONNECT_DELAY = 1000
 
@@ -52,8 +53,12 @@ for i, c in enumerate(colors):
                             w, (i+1)*h_rgb,
                             width=0, fill=c)
 
+printing = False
+
 def task():
     """Read RGB value from serial and display it on the screen."""
+    global printing
+
     try:
         if not ser.is_open:
             serial_connect()
@@ -67,7 +72,7 @@ def task():
         logging.debug("%sbuffer: %d", line, ser.in_waiting)
 
         if m := RGB_PATTERN.match(line):
-            r, g, b, i = m.groups()
+            r, g, b, i, pf = m.groups()
             r, g, b = map(int, (r, g, b))
 
             # If ambient light intensity is present, adjust color accordingly
@@ -82,6 +87,13 @@ def task():
             canvas.create_rectangle(0, 0,
                                     w_rgb, h,
                                     width=0, fill=color)
+
+            if pf is not None:
+                assert pf == PRINT_FLAG
+                printing = True
+                canvas.create_text(w/2, h/2,
+                                   text="PRINTING")
+
             root.update()
     except (SerialException, OSError):
         ser.close()
@@ -89,7 +101,8 @@ def task():
         logging.warning("Serial device disconnected! Retrying in %g s...",
                         RECONNECT_DELAY / 1000)
     else:
-        root.after(TASK_DELAY, task)
+        if not printing:
+            root.after(TASK_DELAY, task)
 
 def on_close():
     """Close serial connection and exit script."""
