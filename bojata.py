@@ -100,15 +100,16 @@ def task():
             color = f'#{r:02x}{g:02x}{b:02x}'
             canvas.create_rectangle(0, 0, w_rgb, h,
                                     width=0, fill=color)
+            root.update()
 
             # If print flag is present, start printing the color
             if pf is not None:
                 assert pf == PRINT_FLAG
                 create_outlined_text(w_rgb/2, h/2,
                                      text=f"Printing...\n{color}")
+                root.update()
                 start_printing(color)
 
-            root.update()
     except (SerialException, OSError):
         ser.close()
         logging.warning("Serial device disconnected!")
@@ -120,19 +121,16 @@ def task():
             root.after(TASK_DELAY, task)
 
 def start_printing(color):
-    with Image.open('template.png') as im:
-        x0 = (im.size[0] - w_rgb) / 2
-        x1 = x0 + w_rgb
-        y0 = (im.size[1] - h) / 2
-        y1 = y0 + h
+    im = Image.new(mode='RGB', size=(248, 351))
+    draw = ImageDraw.Draw(im)
+    draw.rectangle((60,     60+120, 96,      96+84),   fill=color)
+    draw.rectangle((60+120, 60+128, 96,      96+28),   fill='red')
+    draw.rectangle((60+120, 60+128, 96+28,   96+2*28), fill='green')
+    draw.rectangle((60+120, 60+128, 96+2*28, 96+3*28), fill='blue')
+    im.save('print.png', 'PNG')
 
-        draw = ImageDraw.Draw(im)
-        draw.rectangle((x0, x1, y0, y1), fill=color)
-
-        im.save('template_test1.png', 'PNG')
-
-        for printer_name in conn.getPrinters().keys():
-            conn.printFile(printer_name, 'template_test1.png', '', {})
+    for printer_name in conn.getPrinters().keys():
+        conn.printFile(printer_name, 'print.png', '', {})
 
     global is_printing
     is_printing = True
