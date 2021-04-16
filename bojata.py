@@ -16,8 +16,6 @@ COMPORT_PATTERN = re.compile(r'/dev/ttyACM\d+|COM\d+')
 PRINT_FLAG = "@"
 RGB_PATTERN = re.compile(rf'(\d+),(\d+),(\d+)(?:;(\d+))?({PRINT_FLAG})?\r?\n')  # R,G,B[;I]["@"]
 
-TEXT_FONT = tk.font.Font(family='Noto Sans', size=36, weight=tk.font.BOLD)
-
 logging.basicConfig(format='[%(levelname)s] %(asctime)s - %(message)s',
                     level=os.getenv('LOGLEVEL', 'INFO').upper())
 
@@ -43,6 +41,8 @@ serial_connect()
 root = tk.Tk()
 root.title('bojata')
 root.attributes('-fullscreen', True)
+default_font = tk.font.nametofont('TkDefaultFont')
+default_font.configure(family='Noto Sans', size=36)
 canvas = tk.Canvas(root, borderwidth=0, highlightthickness=0)
 canvas.pack(expand=True, fill=tk.BOTH)
 
@@ -93,8 +93,11 @@ def task():
             if pf is not None:
                 assert pf == PRINT_FLAG
                 printing = True
-                canvas.create_text(w/2, h/2,
-                                   text="Printing...", font=TEXT_FONT)
+                text = canvas.create_text(w/2, h/2,
+                                         text="Printing...", fill='white')
+                bbox = canvas.bbox(text)
+                rect = canvas.create_rectangle(bbox, outline='red', fill='black')
+                canvas.tag_raise(text, rect)
 
             root.update()
     except (SerialException, OSError):
