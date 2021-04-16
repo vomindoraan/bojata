@@ -3,6 +3,8 @@
 #define BAUD_RATE  115200
 #define LOOP_DELAY 1
 
+#define PRINT_PIN  8
+
 // TCS230 constants
 #define SENSOR_S0  3
 #define SENSOR_S1  4
@@ -40,6 +42,8 @@ inline uint16_t to_rgb565(uint8_t r8, uint8_t g8, uint8_t b8) {
 }
 
 void setup() {
+    pinMode(PRINT_PIN, INPUT_PULLUP);
+
     pinMode(SENSOR_S0, OUTPUT);
     pinMode(SENSOR_S1, OUTPUT);
     pinMode(SENSOR_S2, OUTPUT);
@@ -95,9 +99,14 @@ void loop() {
 //    Serial.print(b5);
 //    Serial.println();
 
+    bool print = !digitalRead(PRINT_PIN);
+
     // Send 24-bit RGB888 value over serial
-    char rgb888[12];
+    char rgb888[13];
     snprintf(rgb888, 12, "%d,%d,%d", r8, g8, b8);
+    if (print) {
+        strcat(rgb888, "@");
+    }
     Serial.println(rgb888);
 
     // Fill TFT screen with 16-bit RGB565 value
