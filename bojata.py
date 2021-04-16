@@ -16,8 +16,9 @@ TASK_DELAY = 0
 RECONNECT_DELAY = 1000
 
 COMPORT_PATTERN = re.compile(r'/dev/ttyACM\d+|COM\d+')
-PRINT_FLAG = "@"
+PRINT_FLAG = '@'
 RGB_PATTERN = re.compile(rf'(\d+),(\d+),(\d+)(?:;(\d+))?({PRINT_FLAG})?\r?\n')  # R,G,B[;I]["@"]
+PRINT_IMAGE_PATH = 'print.png'
 
 logging.basicConfig(format='[%(levelname)s] %(asctime)s - %(message)s',
                     level=os.getenv('LOGLEVEL', 'INFO').upper())
@@ -40,9 +41,8 @@ def serial_connect():
 
 serial_connect()
 
-# Initialize connections to CUPS server
+# Initialize connection to CUPS server
 cups_conn = cups.Connection()
-cups_sub = cupsn.Subscriber()
 
 # Initialize GUI
 root = tk.Tk()
@@ -124,32 +124,40 @@ is_printing = False
 job_ids = set()
 
 def start_printing(color):
+    logging.debug("Generating image for %s", color)
     im = Image.new(mode='RGB', size=(992, 1403), color='white')  # A4 @ 120 PPI
     draw = ImageDraw.Draw(im)
     draw.rectangle((240,     384,       240+480, 384+336),   fill=color)
     draw.rectangle((240+480, 384,       240+512, 384+112),   fill='#ff0000')
     draw.rectangle((240+480, 384+112,   240+512, 384+2*112), fill='#00ff00')
     draw.rectangle((240+480, 384+2*112, 240+512, 384+3*112), fill='#0000ff')
-    im.save('print.png', 'PNG')
+    im.save(PRINT_IMAGE_PATH, 'PNG')
+    logging.debug("Image generated and saved to %s", PRINT_IMAGE_PATH)
 
     global is_printing
     is_printing = True
+    logging.info("Starting printing for %s", color)
 
-    cups_sub.subscribe(on_print_done, (cupsn.event.CUPS_EVT_JOB_COMPLETED,
-                                       cupsn.event.CUPS_EVT_JOB_STOPPED))
     for printer_name in cups_conn.getPrinters().keys():
-        job_ids.add(cups_conn.printFile(printer_name, 'print.png', '', {}))
+        job_ids.add(cups_conn.printFile(printer_name, PRINT_IMAGE_PATH, '', {}))
 
 def on_print_done(evt):
     logging.debug("Printing done event: %s", evt)
 
     if evt.guid in job_ids:
         job_ids.discard(evt.guid)
+        logging.debug("Job %d completed. Remaining: %s", job_ids)
 
     if not job_ids:
         global is_printing
         is_printing = False
+        logging.info("Finished printing for %s", color)
         root.after(TASK_DELAY, task)
+
+# Initialize CUPS subscriber
+cups_sub = cupsn.Subscriber(cups_conn)
+cups_sub.subscribe(on_print_done, [cupsn.event.CUPS_EVT_JOB_COMPLETED,
+                                   cupsn.event.CUPS_EVT_JOB_STOPPED])
 
 def on_close():
     """Close serial connection and exit script."""
