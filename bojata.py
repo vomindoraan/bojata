@@ -7,6 +7,7 @@ import tkinter.font
 
 import cups
 from cups_notify import Subscriber
+from PIL import Image, ImageDraw
 from serial import Serial, SerialException
 from serial.tools.list_ports import comports
 
@@ -119,8 +120,18 @@ def task():
             root.after(TASK_DELAY, task)
 
 def start_printing(color):
-    global is_printing
+    with Image.open('template.png') as im:
+        x0 = (im.size[0] - w_rgb) / 2
+        x1 = x0 + w_rgb
+        y0 = (im.size[1] - h) / 2
+        y1 = y0 + h
 
+        draw = ImageDraw.Draw(im)
+        draw.rectangle((x0, x1, y0, y1), fill=color)
+
+        im.save('template_test1.png', 'PNG')
+
+    global is_printing
     is_printing = True
 
 def on_print_done(evt):
