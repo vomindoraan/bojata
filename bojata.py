@@ -93,11 +93,10 @@ def task():
             if pf is not None:
                 assert pf == PRINT_FLAG
                 printing = True
-                text = canvas.create_text(w/2, h/2,
-                                         text="Printing...", fill='white')
-                bbox = canvas.bbox(text)
-                rect = canvas.create_rectangle(bbox, outline='red', fill='black')
-                canvas.tag_raise(text, rect)
+                canvas.create_text(w/2+2, h/2+2,
+                                   text="Printing...", fill='black')
+                canvas.create_text(w/2, h/2,
+                                   text="Printing...", fill='white')
 
             root.update()
     except (SerialException, OSError):
