@@ -5,6 +5,8 @@ import re
 import tkinter as tk
 import tkinter.font
 
+import cups
+from cups_notify import Subscriber
 from serial import Serial, SerialException
 from serial.tools.list_ports import comports
 
@@ -37,6 +39,9 @@ def serial_connect():
 
 serial_connect()
 
+# Initialize connection to CUPS server
+conn = cups.Connection()
+
 # Initialize GUI
 root = tk.Tk()
 root.title('bojata')
@@ -44,12 +49,6 @@ root.attributes('-fullscreen', True)
 tk.font.nametofont('TkDefaultFont').configure(size=36)
 canvas = tk.Canvas(root, borderwidth=0, highlightthickness=0)
 canvas.pack(expand=True, fill=tk.BOTH)
-
-def create_outlined_text(x, y, *args, **kw):
-    kw['fill'] = 'black'
-    canvas.create_text(x+2, y+2, *args, **kw)
-    kw['fill'] = 'white'
-    canvas.create_text(x, y, *args, **kw)
 
 # Draw RGB swatches on the right edge
 w = root.winfo_screenwidth()
@@ -61,12 +60,17 @@ for i, c in enumerate(colors):
     canvas.create_rectangle(w_rgb, i*h_rgb, w, (i+1)*h_rgb,
                             width=0, fill=c)
 
-printing = False
+def create_outlined_text(x, y, *args, **kw):
+    """Draw white-on-black outlined text."""
+    kw['fill'] = 'black'
+    canvas.create_text(x+2, y+2, *args, **kw)
+    kw['fill'] = 'white'
+    canvas.create_text(x, y, *args, **kw)
+
+is_printing = False  # Global printing state flag
 
 def task():
     """Read RGB value from serial and display it on the screen."""
-    global printing
-
     try:
         if not ser.is_open:
             serial_connect()
@@ -76,6 +80,7 @@ def task():
             logging.info("Discarding %d buffered bytes", ser.in_waiting)
             ser.reset_input_buffer()
 
+        # Read the upcoming line and check if it's a valid RGB message
         line = ser.readline().decode('utf8')
         logging.debug("%sbuffer: %d", line, ser.in_waiting)
 
@@ -95,21 +100,32 @@ def task():
             canvas.create_rectangle(0, 0, w_rgb, h,
                                     width=0, fill=color)
 
+            # If print flag is present, start printing the color
             if pf is not None:
                 assert pf == PRINT_FLAG
-                printing = True
                 create_outlined_text(w_rgb/2, h/2,
                                      text=f"Printing...\n{color}")
+                start_printing(color)
 
             root.update()
     except (SerialException, OSError):
         ser.close()
-        root.after(RECONNECT_DELAY, task)
-        logging.warning("Serial device disconnected! Retrying in %g s...",
-                        RECONNECT_DELAY / 1000)
+        logging.warning("Serial device disconnected!")
+        if not is_printing:
+            logging.info("Retrying in %g s...", RECONNECT_DELAY / 1000)
+            root.after(RECONNECT_DELAY, task)
     else:
-        if not printing:
+        if not is_printing:
             root.after(TASK_DELAY, task)
+
+def start_printing(color):
+    global is_printing
+
+    is_printing = True
+
+def on_print_done(evt):
+
+    is_printing = False
 
 def on_close():
     """Close serial connection and exit script."""
