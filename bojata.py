@@ -121,12 +121,12 @@ def task():
             root.after(TASK_DELAY, task)
 
 def start_printing(color):
-    im = Image.new(mode='RGB', size=(248, 351))
+    im = Image.new(mode='RGB', size=(496, 702), color='white')
     draw = ImageDraw.Draw(im)
-    draw.rectangle((60,     60+120, 96,      96+84),   fill=color)
-    draw.rectangle((60+120, 60+128, 96,      96+28),   fill='red')
-    draw.rectangle((60+120, 60+128, 96+28,   96+2*28), fill='green')
-    draw.rectangle((60+120, 60+128, 96+2*28, 96+3*28), fill='blue')
+    draw.rectangle((120,     120+240, 192,      192+168),  fill=color)
+    draw.rectangle((120+240, 120+256, 192,      192+56),   fill='red')
+    draw.rectangle((120+240, 120+256, 192+56,   192+2*56), fill='green')
+    draw.rectangle((120+240, 120+256, 192+2*56, 192+3*56), fill='blue')
     im.save('print.png', 'PNG')
 
     for printer_name in conn.getPrinters().keys():
