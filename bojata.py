@@ -131,6 +131,9 @@ def start_printing(color):
 
         im.save('template_test1.png', 'PNG')
 
+        for printer_name in conn.getPrinters().keys():
+            conn.printFile(printer_name, 'template_test1.png', '', {})
+
     global is_printing
     is_printing = True
 
