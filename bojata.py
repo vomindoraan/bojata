@@ -79,6 +79,10 @@ def task():
         if ser.in_waiting > 0:
             logging.info("Discarding %d buffered bytes", ser.in_waiting)
             ser.reset_input_buffer()
+            if ser.in_waiting > 14:
+                logging.info("Too many buffered bytes, reconnecting...")
+                ser.close()
+                root.after(0, task)
 
         # Read the upcoming line and check if it's a valid RGB message
         line = ser.readline().decode('utf8')
