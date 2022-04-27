@@ -44,9 +44,23 @@ inline uint16_t toRgb565(uint8_t r8, uint8_t g8, uint8_t b8) {
 
 TFT_ILI9163C tft = TFT_ILI9163C(TFT_CS, TFT_A0);
 
+rtos::Thread tftThread;
+rtos::Semaphore tftSem(0, 1);
+uint16_t tftRgb565;
+
 rtos::Thread printThread;
-rtos::Mutex mutex;
+rtos::Mutex printMutex;
 bool printPressed;
+
+void paintScreen() {
+    while (true) {
+        // Paint TFT screen with 16-bit RGB565 value
+        tftSem.acquire();
+        tft.fillRect(0, 0, 128, 112, tftRgb565);
+
+        delay(LOOP_DELAY);
+    }
+}
 
 void checkPrint() {
     static bool oldPrintState = HIGH;
@@ -55,9 +69,9 @@ void checkPrint() {
         bool printState = digitalRead(PRINT_PIN);
         if (printState != oldPrintState) {
             if (printState == LOW) {
-                mutex.lock();
+                printMutex.lock();
                 printPressed = true;
-                mutex.unlock();
+                printMutex.unlock();
             }
             oldPrintState = printState;
         }
@@ -85,6 +99,9 @@ void setup() {
     tft.fillRect(86, 112, 43, 16, RED);
     tft.fillRect(43, 112, 43, 16, GREEN);
     tft.fillRect(0,  112, 43, 16, BLUE);
+
+    // Paint TFT screen in a thread
+    tftThread.start(mbed::callback(paintScreen));
 
     // Update print button state in a thread
     printThread.start(mbed::callback(checkPrint));
@@ -132,18 +149,18 @@ void loop() {
     snprintf(rgb888, 12, "%d,%d,%d", r8, g8, b8);
     // If print button was pressed, append print flag
     if (printPressed) {
-        mutex.lock();
+        printMutex.lock();
         printPressed = false;
-        mutex.unlock();
+        printMutex.unlock();
         strcat(rgb888, PRINT_FLAG);
     }
     // Send RGB888 value and (potentially) print flag over serial
     Serial.println(rgb888);
 
-    // Fill TFT screen with 16-bit RGB565 value
-    uint16_t rgb565 = (r5 << 11) | (g6 << 5) | b5;
+    // Set RGB565 value used to paint the TFT screen
+    tftRgb565 = (r5 << 11) | (g6 << 5) | b5;
 //    Serial.println(rgb565, HEX);
-    tft.fillRect(0, 0, 128, 112, rgb565);
+    tftSem.release();
 
     delay(LOOP_DELAY);
     Serial.flush();
