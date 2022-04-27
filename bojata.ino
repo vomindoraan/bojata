@@ -29,8 +29,8 @@
 #define B_MAX 80
 
 // TFT_ILI9163C constants
-#define TFT_A0  9
-#define TFT_CS  10
+#define TFT_A0 9
+#define TFT_CS 10
 
 #define BLACK 0x0000
 #define BLUE  0x001F
@@ -38,11 +38,11 @@
 #define GREEN 0x07E0
 #define WHITE 0xFFFF
 
-TFT_ILI9163C tft = TFT_ILI9163C(TFT_CS, TFT_A0);
-
-inline uint16_t to_rgb565(uint8_t r8, uint8_t g8, uint8_t b8) {
+inline uint16_t toRgb565(uint8_t r8, uint8_t g8, uint8_t b8) {
     return ((r8 & 0xF8) << 8) | ((g8 & 0xFC) << 3) | ((b8 & 0xF8) >> 3);
 }
+
+TFT_ILI9163C tft = TFT_ILI9163C(TFT_CS, TFT_A0);
 
 rtos::Thread printThread;
 rtos::Mutex mutex;
@@ -133,9 +133,9 @@ void loop() {
     // If print button was pressed, append print flag
     if (printPressed) {
         mutex.lock();
-        strcat(rgb888, PRINT_FLAG);
         printPressed = false;
         mutex.unlock();
+        strcat(rgb888, PRINT_FLAG);
     }
     // Send RGB888 value and (potentially) print flag over serial
     Serial.println(rgb888);
