@@ -1,3 +1,5 @@
+#include <platform/Callback.h>
+#include <rtos.h>
 #include <TFT_ILI9163C.h>
 
 #define BAUD_RATE  115200
@@ -42,6 +44,28 @@ inline uint16_t to_rgb565(uint8_t r8, uint8_t g8, uint8_t b8) {
     return ((r8 & 0xF8) << 8) | ((g8 & 0xFC) << 3) | ((b8 & 0xF8) >> 3);
 }
 
+rtos::Thread printThread;
+rtos::Mutex mutex;
+bool printPressed;
+
+void checkPrint() {
+    static bool oldPrintState = HIGH;
+
+    while (true) {
+        bool printState = digitalRead(PRINT_PIN);
+        if (printState != oldPrintState) {
+            if (printState == LOW) {
+                mutex.lock();
+                printPressed = true;
+                mutex.unlock();
+            }
+            oldPrintState = printState;
+        }
+
+        delay(LOOP_DELAY);
+    }
+}
+
 void setup() {
     pinMode(PRINT_PIN, INPUT_PULLUP);
 
@@ -61,6 +85,9 @@ void setup() {
     tft.fillRect(86, 112, 43, 16, RED);
     tft.fillRect(43, 112, 43, 16, GREEN);
     tft.fillRect(0,  112, 43, 16, BLUE);
+
+    // Update print button state in a thread
+    printThread.start(mbed::callback(checkPrint));
 }
 
 void loop() {
@@ -104,13 +131,11 @@ void loop() {
     char rgb888[13];
     snprintf(rgb888, 12, "%d,%d,%d", r8, g8, b8);
     // If print button was pressed, append print flag
-    static bool oldPrintState = HIGH;
-    bool printState = digitalRead(PRINT_PIN);
-    if (printState != oldPrintState) {
-        if (printState == LOW) {
-            strcat(rgb888, PRINT_FLAG);
-        }
-        oldPrintState = printState;
+    if (printPressed) {
+        mutex.lock();
+        strcat(rgb888, PRINT_FLAG);
+        printPressed = false;
+        mutex.unlock();
     }
     // Send RGB888 value and (potentially) print flag over serial
     Serial.println(rgb888);
