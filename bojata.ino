@@ -3,7 +3,6 @@
 #include <TFT_ILI9163C.h>
 
 #define BAUD_RATE  115200
-#define LOOP_DELAY 1
 
 #define PRINT_PIN  8
 #define PRINT_FLAG "@"
@@ -42,6 +41,10 @@ inline uint16_t toRgb565(uint8_t r8, uint8_t g8, uint8_t b8) {
     return ((r8 & 0xF8) << 8) | ((g8 & 0xFC) << 3) | ((b8 & 0xF8) >> 3);
 }
 
+#define TFT_DELAY   0
+#define PRINT_DELAY 1
+#define MAIN_DELAY  200
+
 TFT_ILI9163C tft = TFT_ILI9163C(TFT_CS, TFT_A0);
 
 rtos::Thread tftThread;
@@ -58,7 +61,7 @@ void paintScreen() {
         tftSem.acquire();
         tft.fillRect(0, 0, 128, 112, tftRgb565);
 
-        delay(LOOP_DELAY);
+        rtos::ThisThread::sleep_for(TFT_DELAY);
     }
 }
 
@@ -76,7 +79,7 @@ void checkPrint() {
             oldPrintState = printState;
         }
 
-        delay(LOOP_DELAY);
+        rtos::ThisThread::sleep_for(PRINT_DELAY);
     }
 }
 
@@ -162,6 +165,6 @@ void loop() {
 //    Serial.println(rgb565, HEX);
     tftSem.release();
 
-    delay(LOOP_DELAY);
+    rtos::ThisThread::sleep_for(MAIN_DELAY);
     Serial.flush();
 }
