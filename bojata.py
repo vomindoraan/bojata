@@ -13,7 +13,7 @@ from serial.tools.list_ports import comports
 BAUD_RATE = 115200
 TASK_DELAY = 0
 RECONNECT_DELAY = 1000
-PRINT_DELAY = 20000
+PRINT_DELAY = 10000
 
 COMPORT_PATTERN = re.compile(r'/dev/ttyACM\d+|COM\d+')
 PRINT_FLAG = '@'
@@ -57,8 +57,7 @@ w = root.winfo_screenwidth()
 h = root.winfo_screenheight()
 w_rgb = w - w / 16
 h_rgb = h / 3
-colors = ('#ff0000', '#00ff00', '#0000ff')
-for i, c in enumerate(colors):
+for i, c in enumerate(('#ff0000', '#00ff00', '#0000ff')):
     canvas.create_rectangle(w_rgb, i*h_rgb, w, (i+1)*h_rgb,
                             width=0, fill=c)
 
@@ -70,7 +69,9 @@ def create_outlined_text(x, y, *args, **kw):
     canvas.create_text(x, y, *args, **kw)
 
 def task():
-    """Read RGB value from serial and display it on the screen."""
+    """Read RGB value from serial, display it on the screen, and (optionally)
+    send it for printing.
+    """
     try:
         if not ser.is_open:
             serial_connect()
@@ -122,17 +123,20 @@ def task():
 
 def start_printing(color):
     logging.debug("Generating image for %s...", color)
-    im = Image.new(mode='RGB', size=(992, 1403), color='white')  # A4 @ 120 PPI
+    im = Image.new(mode='RGB', size=(874, 1240), color='white')  # A5 @ 150 PPI
     draw = ImageDraw.Draw(im)
-    draw.rectangle((240,     384,       240+480, 384+336),   fill=color)
-    draw.rectangle((240+480, 384,       240+512, 384+112),   fill='#ff0000')
-    draw.rectangle((240+480, 384+112,   240+512, 384+2*112), fill='#00ff00')
-    draw.rectangle((240+480, 384+2*112, 240+512, 384+3*112), fill='#0000ff')
+    draw.rectangle((600,     56,      600+240, 56+168),  fill=color)
+    draw.rectangle((600+240, 56,      600+256, 56+56),   fill='#ff0000')
+    draw.rectangle((600+240, 56+56,   600+256, 56+2*56), fill='#00ff00')
+    draw.rectangle((600+240, 56+2*56, 600+256, 56+3*56), fill='#0000ff')
+    # draw hex code
     im.save(PRINT_FILENAME, 'PNG')
 
     logging.info("Starting printing for %s...", color)
     for printer in cups_conn.getPrinters().keys():
-        cups_conn.printFile(printer, PRINT_FILENAME, '', {})
+        title = f'bojata-{color}'
+        options = {'media': 'A5'}
+        cups_conn.printFile(printer, PRINT_FILENAME, title, options)
 
 def on_close():
     """Close serial connection and exit script."""
