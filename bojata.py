@@ -6,7 +6,7 @@ import tkinter as tk
 import tkinter.font
 
 import cups
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 from serial import Serial, SerialException
 from serial.tools.list_ports import comports
 
@@ -121,15 +121,17 @@ def task():
                         RECONNECT_DELAY / 1000)
         root.after(RECONNECT_DELAY, task)
 
+print_font = ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf', 96)
+
 def start_printing(color):
     logging.debug("Generating image for %s...", color)
     im = Image.new(mode='RGB', size=(874, 1240), color='white')  # A5 @ 150 PPI
-    draw = ImageDraw.Draw(im)
-    draw.rectangle((600,     56,      600+240, 56+168),  fill=color)
-    draw.rectangle((600+240, 56,      600+256, 56+56),   fill='#ff0000')
-    draw.rectangle((600+240, 56+56,   600+256, 56+2*56), fill='#00ff00')
-    draw.rectangle((600+240, 56+2*56, 600+256, 56+3*56), fill='#0000ff')
-    # draw hex code
+    d = ImageDraw.Draw(im)
+    d.rectangle((600,     56,      600+240, 56+168),  fill=color)
+    d.rectangle((600+240, 56,      600+256, 56+56),   fill='#ff0000')
+    d.rectangle((600+240, 56+56,   600+256, 56+2*56), fill='#00ff00')
+    d.rectangle((600+240, 56+2*56, 600+256, 56+3*56), fill='#0000ff')
+    d.text((96, 96), color, font=print_font, fill=color)
     im.save(PRINT_FILENAME, 'PNG')
 
     logging.info("Starting printing for %s...", color)
