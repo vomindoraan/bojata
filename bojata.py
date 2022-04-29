@@ -84,7 +84,6 @@ def task():
         # Read the upcoming line and check if it's a valid RGB message
         line = ser.readline().decode('utf8')
         logging.debug("%sbuffer: %d", line, ser.in_waiting)
-
         if m := RGB_PATTERN.match(line):
             r, g, b, i, pf = m.groups()
             r, g, b = map(int, (r, g, b))
@@ -109,7 +108,7 @@ def task():
                                      text=f"Printing...\n{color}")
                 root.update()
 
-                start_printing(color)
+                root.after(0, start_printing, color)
                 root.after(PRINT_DELAY, task)
                 return
 
