@@ -53,14 +53,15 @@ canvas = tk.Canvas(root, borderwidth=0, highlightthickness=0)
 canvas.pack(expand=True, fill=tk.BOTH)
 
 def swatch_bounds(w, h):
-    w_color = int(w * 15 / 16)
-    h_rgb = int(h / 3)
-    return w_color, h_rgb
+    w_color = w * 15 / 16
+    w_rgb = w - w_color
+    h_rgb = h / 3
+    return w_color, w_rgb, h_rgb
 
 # Draw RGB swatches on the right edge
 w = root.winfo_screenwidth()
 h = root.winfo_screenheight()
-w_color, h_rgb = swatch_bounds(w, h)
+w_color, w_rgb, h_rgb = swatch_bounds(w, h)
 for i, c in enumerate(('#ff0000', '#00ff00', '#0000ff')):
     canvas.create_rectangle(w_color, i*h_rgb, w, (i+1)*h_rgb,
                             width=0, fill=c)
@@ -140,7 +141,7 @@ print_font = ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeMonoBold
 
 def img_draw_swatch(img, x, y, w, h, color):
     d = ImageDraw.Draw(img)
-    w_color, h_rgb = swatch_bounds(w, h)
+    w_color, w_rgb, h_rgb = swatch_bounds(w, h)
     d.rectangle((x,         y,         x+w_color, y+h),       fill=color)
     d.rectangle((x+w_color, y,         x+w,       y+h_rgb),   fill='#ff0000')
     d.rectangle((x+w_color, y+h_rgb,   x+w,       y+2*h_rgb), fill='#00ff00')
