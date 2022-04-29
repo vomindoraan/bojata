@@ -43,7 +43,7 @@ inline uint16_t toRgb565(uint8_t r8, uint8_t g8, uint8_t b8) {
 
 #define TFT_DELAY   0
 #define PRINT_DELAY 1
-#define MAIN_DELAY  200
+#define MAIN_DELAY  300
 
 TFT_ILI9163C tft = TFT_ILI9163C(TFT_CS, TFT_A0);
 
