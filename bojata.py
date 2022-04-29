@@ -13,7 +13,7 @@ from serial.tools.list_ports import comports
 BAUD_RATE = 115200
 TASK_DELAY = 0
 RECONNECT_DELAY = 1000
-PRINT_DELAY = 20000
+PRINT_DELAY = 10000
 
 COMPORT_PATTERN = re.compile(r'/dev/ttyACM\d+|COM\d+')
 PRINT_FLAG = '@'
@@ -52,13 +52,17 @@ tk.font.nametofont('TkDefaultFont').configure(size=36)
 canvas = tk.Canvas(root, borderwidth=0, highlightthickness=0)
 canvas.pack(expand=True, fill=tk.BOTH)
 
+def swatch_bounds(w, h):
+    w_color = int(w * 15 / 16)
+    h_rgb = int(h / 3)
+    return w_color, h_rgb
+
 # Draw RGB swatches on the right edge
 w = root.winfo_screenwidth()
 h = root.winfo_screenheight()
-w_rgb = w - w / 16
-h_rgb = h / 3
+w_color, h_rgb = swatch_bounds(w, h)
 for i, c in enumerate(('#ff0000', '#00ff00', '#0000ff')):
-    canvas.create_rectangle(w_rgb, i*h_rgb, w, (i+1)*h_rgb,
+    canvas.create_rectangle(w_color, i*h_rgb, w, (i+1)*h_rgb,
                             width=0, fill=c)
 
 def create_outlined_text(x, y, *args, **kw):
@@ -84,7 +88,6 @@ def task():
         # Read the upcoming line and check if it's a valid RGB message
         line = ser.readline().decode('utf8')
         logging.debug("%sbuffer: %d", line, ser.in_waiting)
-
         if m := RGB_PATTERN.match(line):
             r, g, b, i, pf = m.groups()
             r, g, b = map(int, (r, g, b))
@@ -98,18 +101,18 @@ def task():
 
             # Draw colored area
             color = f'#{r:02x}{g:02x}{b:02x}'
-            canvas.create_rectangle(0, 0, w_rgb, h,
+            canvas.create_rectangle(0, 0, w_color, h,
                                     width=0, fill=color)
             root.update()
 
             # If print flag is present, start printing the color
             if pf is not None:
                 assert pf == PRINT_FLAG
-                create_outlined_text(w_rgb/2, h/2,
+                create_outlined_text(w_color/2, h/2,
                                      text=f"Printing...\n{color}")
                 root.update()
 
-                start_printing(color)
+                root.after(0, start_printing, color)
                 root.after(PRINT_DELAY, task)
                 return
 
@@ -121,24 +124,28 @@ def task():
                         RECONNECT_DELAY / 1000)
         root.after(RECONNECT_DELAY, task)
 
-print_font = ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf', 96)
-
 def start_printing(color):
     logging.debug("Generating image for %s...", color)
-    im = Image.new(mode='RGB', size=(874, 1240), color='white')  # A5 @ 150 PPI
-    d = ImageDraw.Draw(im)
-    d.rectangle((600,     56,      600+240, 56+168),  fill=color)
-    d.rectangle((600+240, 56,      600+256, 56+56),   fill='#ff0000')
-    d.rectangle((600+240, 56+56,   600+256, 56+2*56), fill='#00ff00')
-    d.rectangle((600+240, 56+2*56, 600+256, 56+3*56), fill='#0000ff')
-    d.text((96, 96), color, font=print_font, fill=color)
-    im.save(PRINT_FILENAME, 'PNG')
+    img = Image.new(mode='RGB', size=(874, 1240), color='white')  # A5 @ 150 PPI
+    img_draw_swatch(img, 600, 56, 256, 168, color)
+    img.save(PRINT_FILENAME, 'PNG')
 
     logging.info("Starting printing for %s...", color)
     for printer in cups_conn.getPrinters().keys():
         title = f'bojata-{color}'
         options = {'media': 'A5'}
         cups_conn.printFile(printer, PRINT_FILENAME, title, options)
+
+print_font = ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf', 96)
+
+def img_draw_swatch(img, x, y, w, h, color):
+    d = ImageDraw.Draw(img)
+    w_color, h_rgb = swatch_bounds(w, h)
+    d.rectangle((x,         y,         x+w_color, y+h),       fill=color)
+    d.rectangle((x+w_color, y,         x+w,       y+h_rgb),   fill='#ff0000')
+    d.rectangle((x+w_color, y+h_rgb,   x+w,       y+2*h_rgb), fill='#00ff00')
+    d.rectangle((x+w_color, y+2*h_rgb, x+w,       y+3*h_rgb), fill='#0000ff')
+    d.text((96, 96), color, font=print_font, fill=color)
 
 def on_close():
     """Close serial connection and exit script."""
