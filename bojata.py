@@ -2,6 +2,7 @@
 import logging
 import os
 import re
+import sys
 import tkinter as tk
 import tkinter.font
 
@@ -11,7 +12,7 @@ from serial import Serial, SerialException
 from serial.tools.list_ports import comports
 
 BAUD_RATE = 115200
-SERIAL_BUFFER_LIMIT = 96
+SERIAL_BUFFER_LIMIT = 12
 TASK_DELAY = 0
 RECONNECT_DELAY = 1000
 PRINT_DELAY = 10000
@@ -86,6 +87,7 @@ def task():
         if ser.in_waiting > SERIAL_BUFFER_LIMIT:
             logging.info("Discarding %d buffered bytes", ser.in_waiting)
             ser.reset_input_buffer()
+            os.execv(sys.executable, ['python'] + sys.argv)
 
         # Read the upcoming line and check if it's a valid RGB message
         line = ser.readline().decode('utf8')
