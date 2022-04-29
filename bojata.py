@@ -52,13 +52,17 @@ tk.font.nametofont('TkDefaultFont').configure(size=36)
 canvas = tk.Canvas(root, borderwidth=0, highlightthickness=0)
 canvas.pack(expand=True, fill=tk.BOTH)
 
+def swatch_bounds(w, h):
+    w_color = int(w * 15 / 16)
+    h_rgb = int(h / 3)
+    return w_color, h_rgb
+
 # Draw RGB swatches on the right edge
 w = root.winfo_screenwidth()
 h = root.winfo_screenheight()
-w_rgb = w - w / 16
-h_rgb = h / 3
+w_color, h_rgb = swatch_bounds(w, h)
 for i, c in enumerate(('#ff0000', '#00ff00', '#0000ff')):
-    canvas.create_rectangle(w_rgb, i*h_rgb, w, (i+1)*h_rgb,
+    canvas.create_rectangle(w_color, i*h_rgb, w, (i+1)*h_rgb,
                             width=0, fill=c)
 
 def create_outlined_text(x, y, *args, **kw):
@@ -97,14 +101,14 @@ def task():
 
             # Draw colored area
             color = f'#{r:02x}{g:02x}{b:02x}'
-            canvas.create_rectangle(0, 0, w_rgb, h,
+            canvas.create_rectangle(0, 0, w_color, h,
                                     width=0, fill=color)
             root.update()
 
             # If print flag is present, start printing the color
             if pf is not None:
                 assert pf == PRINT_FLAG
-                create_outlined_text(w_rgb/2, h/2,
+                create_outlined_text(w_color/2, h/2,
                                      text=f"Printing...\n{color}")
                 root.update()
 
@@ -122,20 +126,23 @@ def task():
 
 def start_printing(color):
     logging.debug("Generating image for %s...", color)
-    im = Image.new(mode='RGB', size=(874, 1240), color='white')  # A5 @ 150 PPI
-    draw = ImageDraw.Draw(im)
-    draw.rectangle((600,     56,      600+240, 56+168),  fill=color)
-    draw.rectangle((600+240, 56,      600+256, 56+56),   fill='#ff0000')
-    draw.rectangle((600+240, 56+56,   600+256, 56+2*56), fill='#00ff00')
-    draw.rectangle((600+240, 56+2*56, 600+256, 56+3*56), fill='#0000ff')
-    # draw hex code
-    im.save(PRINT_FILENAME, 'PNG')
+    img = Image.new(mode='RGB', size=(874, 1240), color='white')  # A5 @ 150 PPI
+    img_draw_swatch(img, 600, 56, 256, 168, color)
+    img.save(PRINT_FILENAME, 'PNG')
 
     logging.info("Starting printing for %s...", color)
     for printer in cups_conn.getPrinters().keys():
         title = f'bojata-{color}'
         options = {'media': 'A5'}
         cups_conn.printFile(printer, PRINT_FILENAME, title, options)
+
+def img_draw_swatch(img, x, y, w, h, color):
+    d = ImageDraw.Draw(img)
+    w_color, h_rgb = swatch_bounds(w, h)
+    d.rectangle((x,         y,         x+w_color, y+h),       fill=color)
+    d.rectangle((x+w_color, y,         x+w,       y+h_rgb),   fill='#ff0000')
+    d.rectangle((x+w_color, y+h_rgb,   x+w,       y+2*h_rgb), fill='#00ff00')
+    d.rectangle((x+w_color, y+2*h_rgb, x+w,       y+3*h_rgb), fill='#0000ff')
 
 def on_close():
     """Close serial connection and exit script."""
