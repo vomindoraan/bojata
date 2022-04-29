@@ -11,6 +11,7 @@ from serial import Serial, SerialException
 from serial.tools.list_ports import comports
 
 BAUD_RATE = 115200
+SERIAL_BUFFER_LIMIT = 96
 TASK_DELAY = 0
 RECONNECT_DELAY = 1000
 PRINT_DELAY = 10000
@@ -82,7 +83,7 @@ def task():
             serial_connect()
 
         # Discard buffered bytes if they are arriving too quickly
-        if ser.in_waiting > 0:
+        if ser.in_waiting > SERIAL_BUFFER_LIMIT:
             logging.info("Discarding %d buffered bytes", ser.in_waiting)
             ser.reset_input_buffer()
 
