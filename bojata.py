@@ -27,6 +27,9 @@ PRINT_FONT = ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeMonoBold
 COMPORT_PATTERN = re.compile(r'/dev/ttyACM\d+|COM\d+')
 RGB_PATTERN = re.compile(rf'(\d+),(\d+),(\d+)(?:;(\d+))?({PRINT_FLAG})?\r?\n')  # R,G,B[;I]["@"]
 
+SWATCH_COLORS = ('#ff0000', '#00ff00', '#0000ff')
+
+# Globals
 serial: Serial
 cups:   CupsConnection
 window: tk.Tk
@@ -127,10 +130,9 @@ def start_printing(color):
 def img_draw_swatch(img, x, y, w, h, color):
     d = ImageDraw.Draw(img)
     w_color, w_rgb, h_rgb = swatch_bounds(w, h)
-    d.rectangle((x,         y,         x+w_color, y+h),       fill=color)
-    d.rectangle((x+w_color, y,         x+w,       y+h_rgb),   fill='#ff0000')
-    d.rectangle((x+w_color, y+h_rgb,   x+w,       y+2*h_rgb), fill='#00ff00')
-    d.rectangle((x+w_color, y+2*h_rgb, x+w,       y+3*h_rgb), fill='#0000ff')
+    d.rectangle((x, y, x+w_color, y+h), fill=color)
+    for i, sc in enumerate(SWATCH_COLORS):
+        d.rectangle((x+w_color, y+i*h_rgb, x+w, y+(i+1)*h_rgb), fill=sc)
     d.text((96, 96), color, font=PRINT_FONT, fill=color)
 
 
@@ -171,9 +173,9 @@ def init(*, serial_init: Serial = None, cups_init: CupsConnection = None,
     w = window.winfo_vrootwidth()
     h = window.winfo_vrootheight()
     w_color, w_rgb, h_rgb = swatch_bounds(w, h)
-    for i, c in enumerate(('#ff0000', '#00ff00', '#0000ff')):
+    for i, sc in enumerate(SWATCH_COLORS):
         canvas.create_rectangle(w_color, i*h_rgb, w, (i+1)*h_rgb,
-                                width=0, fill=c)
+                                width=0, fill=sc)
     canvas.draw_x = w_color
     canvas.draw_y = h
 
