@@ -168,8 +168,8 @@ def init(*, serial_init: Serial = None, cups_init: CupsConnection = None,
     canvas.pack(expand=True, fill=tk.BOTH)
     tk.font.nametofont('TkDefaultFont').configure(size=36)
     # Draw RGB swatches on the right edge
-    w = window.winfo_screenwidth()
-    h = window.winfo_screenheight()
+    w = window.winfo_vrootwidth()
+    h = window.winfo_vrootheight()
     w_color, w_rgb, h_rgb = swatch_bounds(w, h)
     for i, c in enumerate(('#ff0000', '#00ff00', '#0000ff')):
         canvas.create_rectangle(w_color, i*h_rgb, w, (i+1)*h_rgb,
