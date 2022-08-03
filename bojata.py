@@ -6,10 +6,14 @@ import sys
 import tkinter as tk
 import tkinter.font
 
-import cups
+from cups import Connection as CupsConnection
 from PIL import Image, ImageDraw, ImageFont
 from serial import Serial, SerialException
 from serial.tools.list_ports import comports
+
+
+logging.basicConfig(format='[%(levelname)s] %(asctime)s - %(message)s',
+                    level=os.getenv('LOGLEVEL', 'INFO').upper())
 
 BAUD_RATE = 115200
 SERIAL_BUFFER_LIMIT = 12
@@ -17,16 +21,17 @@ TASK_DELAY = 0
 RECONNECT_DELAY = 1000
 PRINT_DELAY = 10000
 
-COMPORT_PATTERN = re.compile(r'/dev/ttyACM\d+|COM\d+')
 PRINT_FLAG = '@'
-RGB_PATTERN = re.compile(rf'(\d+),(\d+),(\d+)(?:;(\d+))?({PRINT_FLAG})?\r?\n')  # R,G,B[;I]["@"]
 PRINT_FILENAME = 'print.png'
+PRINT_FONT = ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf', 96)
+COMPORT_PATTERN = re.compile(r'/dev/ttyACM\d+|COM\d+')
+RGB_PATTERN = re.compile(rf'(\d+),(\d+),(\d+)(?:;(\d+))?({PRINT_FLAG})?\r?\n')  # R,G,B[;I]["@"]
 
-logging.basicConfig(format='[%(levelname)s] %(asctime)s - %(message)s',
-                    level=os.getenv('LOGLEVEL', 'INFO').upper())
+serial: Serial
+cups:   CupsConnection
+window: tk.Tk
+canvas: tk.Canvas
 
-# Initialize serial connection
-ser = Serial(baudrate=BAUD_RATE)
 
 def serial_connect():
     """Open a serial connection on the first available matching port."""
@@ -36,62 +41,30 @@ def serial_connect():
     logging.debug("Matching ports: %s", matching_ports)
     if not matching_ports:
         raise SerialException("No serial device available")
-    ser.port = matching_ports[0]
-    ser.open()
+
+    serial.port = matching_ports[0]
+    serial.open()
     logging.info("Connected to serial device on %s at %d baud",
-                 ser.port, BAUD_RATE)
+                 serial.port, BAUD_RATE)
 
-serial_connect()
-
-# Initialize connection to CUPS server
-cups_conn = cups.Connection()
-
-# Initialize GUI
-root = tk.Tk()
-root.title('bojata')
-root.attributes('-fullscreen', True)
-tk.font.nametofont('TkDefaultFont').configure(size=36)
-canvas = tk.Canvas(root, borderwidth=0, highlightthickness=0)
-canvas.pack(expand=True, fill=tk.BOTH)
-
-def swatch_bounds(w, h):
-    w_color = w * 15 / 16
-    w_rgb = w - w_color
-    h_rgb = h / 3
-    return w_color, w_rgb, h_rgb
-
-# Draw RGB swatches on the right edge
-w = root.winfo_screenwidth()
-h = root.winfo_screenheight()
-w_color, w_rgb, h_rgb = swatch_bounds(w, h)
-for i, c in enumerate(('#ff0000', '#00ff00', '#0000ff')):
-    canvas.create_rectangle(w_color, i*h_rgb, w, (i+1)*h_rgb,
-                            width=0, fill=c)
-
-def create_outlined_text(x, y, *args, **kw):
-    """Draw white-on-black outlined text."""
-    kw['fill'] = 'black'
-    canvas.create_text(x+2, y+2, *args, **kw)
-    kw['fill'] = 'white'
-    canvas.create_text(x, y, *args, **kw)
 
 def task():
-    """Read RGB value from serial, display it on the screen, and (optionally)
-    send it for printing.
+    """Read RGB value from serial, display it in the window, and (optionally)
+    send it to be printed.
     """
     try:
-        if not ser.is_open:
+        if not serial.is_open:
             serial_connect()
 
         # Discard buffered bytes if they are arriving too quickly
-        if ser.in_waiting > SERIAL_BUFFER_LIMIT:
-            logging.info("Discarding %d buffered bytes", ser.in_waiting)
-            ser.reset_input_buffer()
+        if serial.in_waiting > SERIAL_BUFFER_LIMIT:
+            logging.info("Discarding %d buffered bytes", serial.in_waiting)
+            serial.reset_input_buffer()
             os.execv(sys.executable, ['python'] + sys.argv)
 
         # Read the upcoming line and check if it's a valid RGB message
-        line = ser.readline().decode('utf8')
-        logging.debug("%sbuffer: %d", line, ser.in_waiting)
+        line = serial.readline().decode('utf8')
+        logging.debug("%sbuffer: %d", line, serial.in_waiting)
         if m := RGB_PATTERN.match(line):
             r, g, b, i, pf = m.groups()
             r, g, b = map(int, (r, g, b))
@@ -105,42 +78,51 @@ def task():
 
             # Draw colored area
             color = f'#{r:02x}{g:02x}{b:02x}'
-            canvas.create_rectangle(0, 0, w_color, h,
+            canvas.create_rectangle(0, 0, canvas.draw_x, canvas.draw_y,
                                     width=0, fill=color)
-            root.update()
+            window.update()
 
             # If print flag is present, start printing the color
             if pf is not None:
                 assert pf == PRINT_FLAG
-                create_outlined_text(w_color/2, h/2,
+                create_outlined_text(canvas.draw_x/2, canvas.draw_y/2,
                                      text=f"Printing...\n{color}")
-                root.update()
+                window.update()
 
-                root.after(0, start_printing, color)
-                root.after(PRINT_DELAY, task)
+                window.after(0, start_printing, color)
+                window.after(PRINT_DELAY, task)
                 return
 
-        root.after(TASK_DELAY, task)
+        window.after(TASK_DELAY, task)
 
     except (SerialException, OSError):
-        ser.close()
+        serial.close()
         logging.warning("Serial device disconnected! Retrying in %g s...",
                         RECONNECT_DELAY / 1000)
-        root.after(RECONNECT_DELAY, task)
+        window.after(RECONNECT_DELAY, task)
+
+
+def create_outlined_text(x, y, *args, **kw):
+    """Draw white-on-black outlined text."""
+    kw['fill'] = 'black'
+    canvas.create_text(x+2, y+2, *args, **kw)
+    kw['fill'] = 'white'
+    canvas.create_text(x, y, *args, **kw)
+
 
 def start_printing(color):
+    """Generate and print the image containing the selected color."""
     logging.debug("Generating image for %s...", color)
     img = Image.new(mode='RGB', size=(874, 1240), color='white')  # A5 @ 150 PPI
     img_draw_swatch(img, 600, 56, 256, 168, color)
     img.save(PRINT_FILENAME, 'PNG')
 
     logging.info("Starting printing for %s...", color)
-    for printer in cups_conn.getPrinters().keys():
+    for printer in cups.getPrinters().keys():
         title = f'bojata-{color}'
         options = {'media': 'A5'}
-        cups_conn.printFile(printer, PRINT_FILENAME, title, options)
+        cups.printFile(printer, PRINT_FILENAME, title, options)
 
-print_font = ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf', 96)
 
 def img_draw_swatch(img, x, y, w, h, color):
     d = ImageDraw.Draw(img)
@@ -149,13 +131,58 @@ def img_draw_swatch(img, x, y, w, h, color):
     d.rectangle((x+w_color, y,         x+w,       y+h_rgb),   fill='#ff0000')
     d.rectangle((x+w_color, y+h_rgb,   x+w,       y+2*h_rgb), fill='#00ff00')
     d.rectangle((x+w_color, y+2*h_rgb, x+w,       y+3*h_rgb), fill='#0000ff')
-    d.text((96, 96), color, font=print_font, fill=color)
+    d.text((96, 96), color, font=PRINT_FONT, fill=color)
 
-def on_close():
-    """Close serial connection and exit script."""
-    ser.close()
-    exit()
 
-root.after(TASK_DELAY, task)  # Schedule first task
-root.protocol('WM_DELETE_WINDOW', on_close)
-root.mainloop()
+def swatch_bounds(w, h):
+    w_color = w * 15 / 16
+    w_rgb = w - w_color
+    h_rgb = h / 3
+    return w_color, w_rgb, h_rgb
+
+
+def init(*, serial_init: Serial = None, cups_init: CupsConnection = None,
+         window_init: tk.Tk = None):
+    """Initialize connections to serial device and CUPS server, and prepare
+    window for colors to be displayed.
+    """
+    global serial
+    if serial := serial_init is None:
+        serial = Serial(baudrate=BAUD_RATE)
+    serial_connect()
+
+    global cups
+    if cups := cups_init is None:
+        cups = CupsConnection()
+
+    global window
+    if window := window_init is None:
+        window = tk.Tk()
+        window.title('bojata')
+        window.attributes('-fullscreen', True)
+        window.protocol('WM_DELETE_WINDOW', exit)
+
+    # Create canvas in which colors will be drawn
+    global canvas
+    canvas = tk.Canvas(window, borderwidth=0, highlightthickness=0)
+    canvas.pack(expand=True, fill=tk.BOTH)
+    tk.font.nametofont('TkDefaultFont').configure(size=36)
+    # Draw RGB swatches on the right edge
+    w = window.winfo_screenwidth()
+    h = window.winfo_screenheight()
+    w_color, w_rgb, h_rgb = swatch_bounds(w, h)
+    for i, c in enumerate(('#ff0000', '#00ff00', '#0000ff')):
+        canvas.create_rectangle(w_color, i*h_rgb, w, (i+1)*h_rgb,
+                                width=0, fill=c)
+    canvas.draw_x = w_color
+    canvas.draw_y = h
+
+
+def main():
+    init()
+    window.after(TASK_DELAY, task)  # Schedule first task
+    window.mainloop()
+
+
+if __name__ == '__main__':
+    main()
