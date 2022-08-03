@@ -6,8 +6,8 @@ import sys
 import tkinter as tk
 import tkinter.font
 
-from cups import Connection as CupsConnection
 from PIL import Image, ImageDraw, ImageFont
+from cups import Connection as CupsConnection
 from serial import Serial, SerialException
 from serial.tools.list_ports import comports
 
@@ -15,7 +15,7 @@ from serial.tools.list_ports import comports
 logging.basicConfig(format='[%(levelname)s] %(asctime)s - %(message)s',
                     level=os.getenv('LOGLEVEL', 'INFO').upper())
 
-BAUD_RATE = 115200
+SERIAL_BAUD_RATE = 115200
 SERIAL_BUFFER_LIMIT = 12
 TASK_DELAY = 0
 RECONNECT_DELAY = 1000
@@ -48,7 +48,7 @@ def serial_connect():
     serial.port = matching_ports[0]
     serial.open()
     logging.info("Connected to serial device on %s at %d baud",
-                 serial.port, BAUD_RATE)
+                 serial.port, SERIAL_BAUD_RATE)
 
 
 def task():
@@ -150,7 +150,7 @@ def init(*, serial_init: Serial = None, cups_init: CupsConnection = None,
     """
     global serial
     if serial := serial_init is None:
-        serial = Serial(baudrate=BAUD_RATE)
+        serial = Serial(baudrate=SERIAL_BAUD_RATE)
     serial_connect()
 
     global cups
