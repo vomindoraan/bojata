@@ -164,8 +164,9 @@ def init(*, serial_init: Serial = None, cups_init: CupsConnection = None,
         window.title('bojata')
         window.geometry('{}x{}'.format(window.winfo_screenwidth(),
                                        window.winfo_screenheight()))
-        window.attributes('-zoomed', True)
+        window.attributes('-fullscreen', True)
         window.protocol('WM_DELETE_WINDOW', exit)
+        window.update()
         tk.font.nametofont('TkDefaultFont').configure(size=36)  # TODO: Move this
 
     # Create canvas in which colors will be drawn

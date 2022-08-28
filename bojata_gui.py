@@ -12,7 +12,7 @@ class BojataGUI(tk.Tk):
         self.title('bojata')
         self.geometry('{}x{}'.format(self.winfo_screenwidth(),
                                      self.winfo_screenheight()))
-        self.attributes('-zoomed', True)
+        self.attributes('-fullscreen', True)
         self.protocol('WM_DELETE_WINDOW', exit)
 
         self.update()  # Update actual width and height
