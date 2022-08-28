@@ -32,8 +32,9 @@ SWATCH_COLORS = ('#ff0000', '#00ff00', '#0000ff')
 # Globals
 serial: Serial
 cups:   CupsConnection
-window: tk.Tk
+window: tk.Tk  # TODO: Rename these
 canvas: tk.Canvas
+color:  str
 
 
 def serial_connect():
@@ -80,6 +81,7 @@ def task():
                 b = int(b / total * 255)
 
             # Draw colored area
+            global color
             color = f'#{r:02x}{g:02x}{b:02x}'
             canvas.create_rectangle(0, 0, canvas.draw_x, canvas.draw_y,
                                     width=0, fill=color)
