@@ -50,12 +50,12 @@ class HomeFrame(tk.Frame):
         self.color_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True,
                               padx=self.root.padding, pady=self.root.padding)
 
-        scan_button = tk.Button(self, text="SCAN", # fg="red",
+        scan_button = tk.Button(self, text="ОЧИТАЈ\nБОЈУ", # fg="red",
                                 padx=self.root.padding*2, pady=self.root.padding*2,
                                 command=partial(root.show_frame, 'ScanFrame'))
         scan_button.pack(side=tk.TOP, expand=True)
 
-        list_button = tk.Button(self, text="LIST", # fg="green",
+        list_button = tk.Button(self, text="БАЗА\nБОЈА", # fg="green",
                                 padx=self.root.padding*2, pady=self.root.padding*2,
                                 command=partial(root.show_frame, 'ListFrame'))
         list_button.pack(side=tk.TOP, expand=True)
