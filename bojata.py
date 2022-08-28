@@ -181,10 +181,11 @@ def init(*, serial_init: Serial = None, cups_init: CupsConnection = None,
     canvas.draw_x = w_color
     canvas.draw_y = h
 
+    window.after(TASK_DELAY, task)  # Schedule first task
+
 
 def main():
     init()
-    window.after(TASK_DELAY, task)  # Schedule first task
     window.mainloop()
 
 
