@@ -160,17 +160,18 @@ def init(*, serial_init: Serial = None, cups_init: CupsConnection = None,
     if (window := window_init) is None:
         window = tk.Tk()
         window.title('bojata')
-        window.attributes('-fullscreen', True)
+        window.geometry('{}x{}'.format(window.winfo_screenwidth(),
+                                       window.winfo_screenheight()))
+        window.attributes('-zoomed', True)
         window.protocol('WM_DELETE_WINDOW', exit)
+        tk.font.nametofont('TkDefaultFont').configure(size=36)  # TODO: Move this
 
     # Create canvas in which colors will be drawn
     global canvas
     canvas = tk.Canvas(window, borderwidth=0, highlightthickness=0)
-    canvas.pack(expand=True, fill=tk.BOTH)
-    tk.font.nametofont('TkDefaultFont').configure(size=36)
+    canvas.pack(fill=tk.BOTH, expand=True)
     # Draw RGB swatches on the right edge
-    w = window.winfo_vrootwidth()
-    h = window.winfo_vrootheight()
+    w, h = window.winfo_width(), window.winfo_height()
     w_color, w_rgb, h_rgb = swatch_bounds(w, h)
     for i, sc in enumerate(SWATCH_COLORS):
         canvas.create_rectangle(w_color, i*h_rgb, w, (i+1)*h_rgb,
