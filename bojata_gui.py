@@ -16,7 +16,7 @@ class BojataGUI(tk.Tk):
         self.protocol('WM_DELETE_WINDOW', exit)
 
         self.update()  # Update actual width and height
-        self.padding = self.winfo_width() // 150
+        self.padding = self.winfo_width() // 100
 
         tk.font.nametofont('TkDefaultFont').configure(size=36)
 
@@ -51,12 +51,12 @@ class HomeFrame(tk.Frame):
                               padx=self.root.padding, pady=self.root.padding)
 
         scan_button = tk.Button(self, text="SCAN", # fg="red",
-                                padx=self.root.padding, pady=self.root.padding,
+                                padx=self.root.padding*2, pady=self.root.padding*2,
                                 command=partial(root.show_frame, 'ScanFrame'))
         scan_button.pack(side=tk.TOP, expand=True)
 
         list_button = tk.Button(self, text="LIST", # fg="green",
-                                padx=self.root.padding, pady=self.root.padding,
+                                padx=self.root.padding*2, pady=self.root.padding*2,
                                 command=partial(root.show_frame, 'ListFrame'))
         list_button.pack(side=tk.TOP, expand=True)
 
