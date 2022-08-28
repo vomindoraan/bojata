@@ -67,7 +67,7 @@ class ScanFrame(tk.Frame):
         self.root = root
 
         self.rowconfigure(0, weight=1)
-        self.columnconfigure(0, weight=1)
+        self.columnconfigure(0, weight=2)
         self.columnconfigure(1, weight=1)
 
         # Left half
@@ -83,6 +83,17 @@ class ScanFrame(tk.Frame):
         frame2 = tk.Frame(self)
         frame2.grid(row=0, column=1, sticky='nsew',
                     padx=self.root.padding, pady=self.root.padding)
+        frame2.columnconfigure(0, weight=1)
+        font = ('TkDefaultFont', 18)
+        pady = (0, self.root.padding)
+        tk.Label(frame2, text="НАЗИВ БОЈЕ", font=font).grid(row=0, column=0, sticky='nw')
+        tk.Entry(frame2, font=font).grid(row=1, column=0, sticky='we', pady=pady)
+        tk.Label(frame2, text="КАТЕГОРИЈА", font=font).grid(row=2, column=0, sticky='nw')
+        tk.Entry(frame2, font=font).grid(row=3, column=0, sticky='we', pady=pady)
+        tk.Label(frame2, text="АУТОР", font=font).grid(row=4, column=0, sticky='nw')
+        tk.Entry(frame2, font=font).grid(row=5, column=0, sticky='we', pady=pady)
+        tk.Label(frame2, text="КОМЕНТАР", font=font).grid(row=6, column=0, sticky='nw')
+        tk.Entry(frame2, font=font).grid(row=7, column=0, sticky='we', pady=pady)
         # TODO
 
         self.bind('<<ShowFrame>>', self.on_show_frame)
