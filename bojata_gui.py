@@ -70,12 +70,19 @@ class ScanFrame(tk.Frame):
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
 
-        self.color_label = tk.Label(self)
-        # self.color_label.pack(side=tk.LEFT, fill=tk.BOTH, expand=True,
-        #                       padx=self.root.padding, pady=self.root.padding)
-        self.color_label.grid(row=0, column=0, sticky='nsew',
-                              padx=self.root.padding, pady=self.root.padding)
+        # Left half
+        frame1 = tk.Frame(self)
+        frame1.grid(row=0, column=0, sticky='nsew',
+                    padx=self.root.padding, pady=self.root.padding)
+        self.color_label = tk.Label(frame1)
+        self.color_label.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        self.hex_label = tk.Label(frame1)
+        self.hex_label.pack(side=tk.BOTTOM)
 
+        # Right half
+        frame2 = tk.Frame(self)
+        frame2.grid(row=0, column=1, sticky='nsew',
+                    padx=self.root.padding, pady=self.root.padding)
         # TODO
 
         self.bind('<<ShowFrame>>', self.on_show_frame)
@@ -83,6 +90,8 @@ class ScanFrame(tk.Frame):
     def on_show_frame(self, event):
         self.scanned_color = bojata.color
         self.color_label.config(bg=self.scanned_color)
+        self.hex_label.config(text=self.scanned_color)
+        # self.update()
 
 
 class ListFrame(tk.Frame):
