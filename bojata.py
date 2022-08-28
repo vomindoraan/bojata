@@ -21,11 +21,11 @@ TASK_DELAY = 0
 RECONNECT_DELAY = 1000
 PRINT_DELAY = 10000
 
-PRINT_FLAG = '@'
 PRINT_FILENAME = 'print.png'
 PRINT_FONT = ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf', 96)
+PRINT_FLAG = '@'
+RGB_PATTERN = re.compile(fr'(\d+),(\d+),(\d+)(?:;(\d+))?({PRINT_FLAG})?\r?\n')  # R,G,B[;I]["@"]
 COMPORT_PATTERN = re.compile(r'/dev/ttyACM\d+|COM\d+')
-RGB_PATTERN = re.compile(rf'(\d+),(\d+),(\d+)(?:;(\d+))?({PRINT_FLAG})?\r?\n')  # R,G,B[;I]["@"]
 
 SWATCH_COLORS = ('#ff0000', '#00ff00', '#0000ff')
 
@@ -91,7 +91,6 @@ def task():
                 create_outlined_text(canvas.draw_x/2, canvas.draw_y/2,
                                      text=f"Printing...\n{color}")
                 window.update()
-
                 window.after(0, start_printing, color)
                 window.after(PRINT_DELAY, task)
                 return
