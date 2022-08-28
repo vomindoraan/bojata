@@ -148,16 +148,16 @@ def init(*, serial_init: Serial = None, cups_init: CupsConnection = None,
     window for colors to be displayed.
     """
     global serial
-    if serial := serial_init is None:
+    if (serial := serial_init) is None:
         serial = Serial(baudrate=SERIAL_BAUD_RATE)
     serial_connect()
 
     global cups
-    if cups := cups_init is None:
+    if (cups := cups_init) is None:
         cups = CupsConnection()
 
     global window
-    if window := window_init is None:
+    if (window := window_init) is None:
         window = tk.Tk()
         window.title('bojata')
         window.attributes('-fullscreen', True)
