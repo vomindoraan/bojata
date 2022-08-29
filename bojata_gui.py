@@ -6,6 +6,9 @@ import bojata
 import bojata_db
 
 
+FONT_NAME = 'TkDefaultFont'
+
+
 class BojataRoot(tk.Tk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -15,11 +18,10 @@ class BojataRoot(tk.Tk):
                                      self.winfo_screenheight()))
         self.attributes('-fullscreen', True)
         self.protocol('WM_DELETE_WINDOW', exit)
-
         self.update()  # Update actual width and height
         self.padding = self.winfo_width() // 100
 
-        tk.font.nametofont('TkDefaultFont').configure(size=18)
+        tk.font.nametofont(FONT_NAME).configure(size=18)
 
         container = tk.Frame(self)
         container.pack(fill=tk.BOTH, expand=True)
@@ -82,7 +84,7 @@ class ScanFrame(BojataFrame):
         self.color_label = tk.Label(frame1)
         self.color_label.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         self.color_hex = tk.StringVar(self)
-        tk.Label(frame1, textvariable=self.color_hex, font=('TkDefaultFont', 36))\
+        tk.Label(frame1, textvariable=self.color_hex, font=(FONT_NAME, 36))\
             .pack(side=tk.BOTTOM)
 
         # Right half
@@ -91,27 +93,29 @@ class ScanFrame(BojataFrame):
                     padx=self.root.padding, pady=self.root.padding)
         frame2.columnconfigure(0, weight=1)
         pady = (0, self.root.padding)
+        entry_font = (FONT_NAME, 20)
+
         tk.Label(frame2, text="НАЗИВ БОЈЕ")\
-            .grid(row=0, column=0, sticky='nw')
+            .grid(row=0, column=0, columnspan=2, sticky='nw')
         self.color_name = tk.StringVar(self)
-        tk.Entry(frame2, textvariable=self.color_name)\
-            .grid(row=1, column=0, sticky='we', pady=pady)
+        tk.Entry(frame2, textvariable=self.color_name, font=entry_font)\
+            .grid(row=1, column=0, columnspan=2, sticky='we', pady=pady)
         tk.Label(frame2, text="КАТЕГОРИЈА")\
-            .grid(row=2, column=0, sticky='nw')
+            .grid(row=2, column=0, columnspan=2, sticky='nw')
         self.color_category = tk.StringVar(self)
         categories = [c.value for c in bojata_db.ColorCategory]
         tk.OptionMenu(frame2, self.color_category, "", *categories)\
-            .grid(row=3, column=0, sticky='we', pady=pady)
+            .grid(row=3, column=0, columnspan=2, sticky='we', pady=pady)
         tk.Label(frame2, text="АУТОР")\
-            .grid(row=4, column=0, sticky='nw')
+            .grid(row=4, column=0, columnspan=2, sticky='nw')
         self.color_author = tk.StringVar(self)
-        tk.Entry(frame2, textvariable=self.color_author)\
-            .grid(row=5, column=0, sticky='we', pady=pady)
+        tk.Entry(frame2, textvariable=self.color_author, font=entry_font)\
+            .grid(row=5, column=0, columnspan=2, sticky='we', pady=pady)
         tk.Label(frame2, text="КОМЕНТАР")\
-            .grid(row=6, column=0, sticky='nw')
+            .grid(row=6, column=0, columnspan=2, sticky='nw')
         self.color_comment = tk.StringVar(self)
-        tk.Entry(frame2, textvariable=self.color_comment)\
-            .grid(row=7, column=0, sticky='we', pady=pady)
+        tk.Entry(frame2, textvariable=self.color_comment, font=entry_font)\
+            .grid(row=7, column=0, columnspan=2, sticky='we', pady=pady)
         # TODO
 
         self.bind('<<ShowFrame>>', self.on_show_frame)
