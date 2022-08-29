@@ -30,11 +30,11 @@ COMPORT_PATTERN = re.compile(r'/dev/ttyACM\d+|COM\d+')
 SWATCH_COLORS = ('#ff0000', '#00ff00', '#0000ff')
 
 # Globals
-serial: Serial
-cups:   CupsConnection
-window: tk.Tk  # TODO: Rename these
-canvas: tk.Canvas
-color:  str
+serial:     Serial
+cups:       CupsConnection
+frame:      tk.Tk
+canvas:     tk.Canvas
+curr_color: str
 
 
 def serial_connect():
@@ -53,7 +53,7 @@ def serial_connect():
 
 
 def task():
-    """Read RGB value from serial, display it in the window, and (optionally)
+    """Read RGB value from serial, display it in the frame, and (optionally)
     send it to be printed.
     """
     try:
@@ -81,29 +81,29 @@ def task():
                 b = int(b / total * 255)
 
             # Draw colored area
-            global color
-            color = f'#{r:02x}{g:02x}{b:02x}'
+            global curr_color
+            curr_color = f'#{r:02x}{g:02x}{b:02x}'
             canvas.create_rectangle(0, 0, canvas.draw_x, canvas.draw_y,
-                                    width=0, fill=color)
-            window.update()
+                                    width=0, fill=curr_color)
+            frame.update()
 
             # If print flag is present, start printing the color
             if pf is not None:
                 assert pf == PRINT_FLAG
                 create_outlined_text(canvas.draw_x/2, canvas.draw_y/2,
-                                     text=f"Printing...\n{color}")
-                window.update()
-                window.after(0, start_printing, color)
-                window.after(PRINT_DELAY, task)
+                                     text=f"Printing...\n{curr_color}")
+                frame.update()
+                frame.after(0, start_printing, curr_color)
+                frame.after(PRINT_DELAY, task)
                 return
 
-        window.after(TASK_DELAY, task)
+        frame.after(TASK_DELAY, task)
 
     except (SerialException, OSError):
         serial.close()
         logging.warning("Serial device disconnected! Retrying in %g s...",
                         RECONNECT_DELAY / 1000)
-        window.after(RECONNECT_DELAY, task)
+        frame.after(RECONNECT_DELAY, task)
 
 
 def create_outlined_text(x, y, *args, **kw):
@@ -145,9 +145,9 @@ def swatch_bounds(w, h):
 
 
 def init(*, serial_init: Serial = None, cups_init: CupsConnection = None,
-         window_init: tk.Tk = None):
-    """Initialize connections to serial device and CUPS server, and prepare
-    window for colors to be displayed.
+         frame_init: tk.Tk = None):
+    """Initialize connections to serial device and CUPS server, and create a
+    canvas in which colors will be displayed.
     """
     global serial
     if (serial := serial_init) is None:
@@ -158,23 +158,23 @@ def init(*, serial_init: Serial = None, cups_init: CupsConnection = None,
     if (cups := cups_init) is None:
         cups = CupsConnection()
 
-    global window
-    if (window := window_init) is None:
-        window = tk.Tk()
-        window.title('bojata')
-        window.geometry('{}x{}'.format(window.winfo_screenwidth(),
-                                       window.winfo_screenheight()))
-        window.attributes('-fullscreen', True)
-        window.protocol('WM_DELETE_WINDOW', exit)
-        window.update()
+    global frame
+    if (frame := frame_init) is None:
+        frame = tk.Tk()
+        frame.title('bojata')
+        frame.geometry('{}x{}'.format(frame.winfo_screenwidth(),
+                                      frame.winfo_screenheight()))
+        frame.attributes('-fullscreen', True)
+        frame.protocol('WM_DELETE_WINDOW', exit)
+        frame.update()
         tk.font.nametofont('TkDefaultFont').configure(size=36)  # TODO: Move this
 
     # Create canvas in which colors will be drawn
     global canvas
-    canvas = tk.Canvas(window, borderwidth=0, highlightthickness=0)
+    canvas = tk.Canvas(frame, borderwidth=0, highlightthickness=0)
     canvas.pack(fill=tk.BOTH, expand=True)
     # Draw RGB swatches on the right edge
-    w, h = window.winfo_width(), window.winfo_height()
+    w, h = frame.winfo_width(), frame.winfo_height()
     w_color, w_rgb, h_rgb = swatch_bounds(w, h)
     for i, sc in enumerate(SWATCH_COLORS):
         canvas.create_rectangle(w_color, i*h_rgb, w, (i+1)*h_rgb,
@@ -182,12 +182,12 @@ def init(*, serial_init: Serial = None, cups_init: CupsConnection = None,
     canvas.draw_x = w_color
     canvas.draw_y = h
 
-    window.after(TASK_DELAY, task)  # Schedule first task
+    frame.after(TASK_DELAY, task)  # Schedule first task
 
 
 def main():
     init()
-    window.mainloop()
+    frame.mainloop()
 
 
 if __name__ == '__main__':

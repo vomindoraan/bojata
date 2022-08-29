@@ -99,7 +99,7 @@ class ScanFrame(tk.Frame):
         self.bind('<<ShowFrame>>', self.on_show_frame)
 
     def on_show_frame(self, event):
-        self.scanned_color = bojata.color
+        self.scanned_color = bojata.curr_color
         self.color_label.config(bg=self.scanned_color)
         self.hex_label.config(text=self.scanned_color)
         # self.update()
@@ -114,5 +114,5 @@ class ListFrame(tk.Frame):
 if __name__ == '__main__':
     root = BojataGUI()
     color_frame = root.frames['HomeFrame'].color_frame
-    bojata.init(window_init=color_frame, cups_init=0)
+    bojata.init(frame_init=color_frame, cups_init=0)
     root.mainloop()
