@@ -2,7 +2,6 @@
 import logging
 import os
 import re
-import sys
 import tkinter as tk
 import tkinter.font
 
@@ -64,7 +63,7 @@ def task():
         if serial.in_waiting > SERIAL_BUFFER_LIMIT:
             logging.info("Discarding %d buffered bytes", serial.in_waiting)
             serial.reset_input_buffer()
-            os.execv(sys.executable, ['python'] + sys.argv)
+            # os.execv(sys.executable, ['python'] + sys.argv)
 
         # Read the upcoming line and check if it's a valid RGB message
         line = serial.readline().decode('utf8')
@@ -167,7 +166,7 @@ def init(*, serial_init: Serial = None, cups_init: CupsConnection = None,
         frame.attributes('-fullscreen', True)
         frame.protocol('WM_DELETE_WINDOW', exit)
         frame.update()
-        tk.font.nametofont('TkDefaultFont').configure(size=36)  # TODO: Move this
+        tk.font.nametofont('TkDefaultFont').configure(size=36)
 
     # Create canvas in which colors will be drawn
     global canvas
