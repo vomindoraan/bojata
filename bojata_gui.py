@@ -3,9 +3,10 @@ import tkinter as tk
 from functools import partial
 
 import bojata
+import bojata_db
 
 
-class BojataGUI(tk.Tk):
+class BojataRoot(tk.Tk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -18,7 +19,7 @@ class BojataGUI(tk.Tk):
         self.update()  # Update actual width and height
         self.padding = self.winfo_width() // 100
 
-        tk.font.nametofont('TkDefaultFont').configure(size=36)
+        tk.font.nametofont('TkDefaultFont').configure(size=18)
 
         container = tk.Frame(self)
         container.pack(fill=tk.BOTH, expand=True)
@@ -41,30 +42,34 @@ class BojataGUI(tk.Tk):
         frame.event_generate('<<ShowFrame>>')
 
 
-class HomeFrame(tk.Frame):
+class BojataFrame(tk.Frame):
     def __init__(self, parent, root):
         super().__init__(parent)
         self.root = root
+
+
+class HomeFrame(BojataFrame):
+    def __init__(self, parent, root):
+        super().__init__(parent, root)
 
         self.color_frame = tk.Frame(self)
         self.color_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True,
                               padx=self.root.padding, pady=self.root.padding)
 
         scan_button = tk.Button(self, text="ОЧИТАЈ\nБОЈУ", # fg="red",
-                                padx=self.root.padding*2, pady=self.root.padding*2,
+                                padx=self.root.padding*4, pady=self.root.padding*2,
                                 command=partial(root.show_frame, 'ScanFrame'))
         scan_button.pack(side=tk.TOP, expand=True)
 
         list_button = tk.Button(self, text="БАЗА\nБОЈА", # fg="green",
-                                padx=self.root.padding*2, pady=self.root.padding*2,
+                                padx=self.root.padding*4, pady=self.root.padding*2,
                                 command=partial(root.show_frame, 'ListFrame'))
         list_button.pack(side=tk.TOP, expand=True)
 
 
-class ScanFrame(tk.Frame):
+class ScanFrame(BojataFrame):
     def __init__(self, parent, root):
-        super().__init__(parent)
-        self.root = root
+        super().__init__(parent, root)
 
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=2)
@@ -76,24 +81,37 @@ class ScanFrame(tk.Frame):
                     padx=self.root.padding, pady=self.root.padding)
         self.color_label = tk.Label(frame1)
         self.color_label.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-        self.hex_label = tk.Label(frame1)
-        self.hex_label.pack(side=tk.BOTTOM)
+        self.color_hex = tk.StringVar(self)
+        tk.Label(frame1, textvariable=self.color_hex, font=('TkDefaultFont', 36))\
+            .pack(side=tk.BOTTOM)
 
         # Right half
         frame2 = tk.Frame(self)
         frame2.grid(row=0, column=1, sticky='nsew',
                     padx=self.root.padding, pady=self.root.padding)
         frame2.columnconfigure(0, weight=1)
-        font = ('TkDefaultFont', 18)
         pady = (0, self.root.padding)
-        tk.Label(frame2, text="НАЗИВ БОЈЕ", font=font).grid(row=0, column=0, sticky='nw')
-        tk.Entry(frame2, font=font).grid(row=1, column=0, sticky='we', pady=pady)
-        tk.Label(frame2, text="КАТЕГОРИЈА", font=font).grid(row=2, column=0, sticky='nw')
-        tk.Entry(frame2, font=font).grid(row=3, column=0, sticky='we', pady=pady)
-        tk.Label(frame2, text="АУТОР", font=font).grid(row=4, column=0, sticky='nw')
-        tk.Entry(frame2, font=font).grid(row=5, column=0, sticky='we', pady=pady)
-        tk.Label(frame2, text="КОМЕНТАР", font=font).grid(row=6, column=0, sticky='nw')
-        tk.Entry(frame2, font=font).grid(row=7, column=0, sticky='we', pady=pady)
+        tk.Label(frame2, text="НАЗИВ БОЈЕ")\
+            .grid(row=0, column=0, sticky='nw')
+        self.color_name = tk.StringVar(self)
+        tk.Entry(frame2, textvariable=self.color_name)\
+            .grid(row=1, column=0, sticky='we', pady=pady)
+        tk.Label(frame2, text="КАТЕГОРИЈА")\
+            .grid(row=2, column=0, sticky='nw')
+        self.color_category = tk.StringVar(self)
+        categories = [c.value for c in bojata_db.ColorCategory]
+        tk.OptionMenu(frame2, self.color_category, "", *categories)\
+            .grid(row=3, column=0, sticky='we', pady=pady)
+        tk.Label(frame2, text="АУТОР")\
+            .grid(row=4, column=0, sticky='nw')
+        self.color_author = tk.StringVar(self)
+        tk.Entry(frame2, textvariable=self.color_author)\
+            .grid(row=5, column=0, sticky='we', pady=pady)
+        tk.Label(frame2, text="КОМЕНТАР")\
+            .grid(row=6, column=0, sticky='nw')
+        self.color_comment = tk.StringVar(self)
+        tk.Entry(frame2, textvariable=self.color_comment)\
+            .grid(row=7, column=0, sticky='we', pady=pady)
         # TODO
 
         self.bind('<<ShowFrame>>', self.on_show_frame)
@@ -101,18 +119,17 @@ class ScanFrame(tk.Frame):
     def on_show_frame(self, event):
         self.scanned_color = bojata.curr_color
         self.color_label.config(bg=self.scanned_color)
-        self.hex_label.config(text=self.scanned_color)
+        self.color_hex.set(self.scanned_color)
         # self.update()
 
 
-class ListFrame(tk.Frame):
+class ListFrame(BojataFrame):
     def __init__(self, parent, root):
-        super().__init__(parent)
-        self.root = root
+        super().__init__(parent, root)
 
 
 if __name__ == '__main__':
-    root = BojataGUI()
+    root = BojataRoot()
     color_frame = root.frames['HomeFrame'].color_frame
-    bojata.init(frame_init=color_frame, cups_init=0)
+    bojata.init(frame_init=color_frame, cups_init=0)  # TODOL Set up CUPS
     root.mainloop()
