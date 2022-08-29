@@ -9,9 +9,9 @@ Base = declarative_base()
 
 
 class ColorCategory(enum.Enum):
-    WARM = "Топла"
-    COLD = "Хладна"
-    NEUTRAL = "Неутрална"
+    WARM = "Topla"
+    COLD = "Hladna"
+    NEUTRAL = "Neutralna"
     # TODO: Add more categories
 
 

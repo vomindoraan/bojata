@@ -58,12 +58,12 @@ class HomeFrame(BojataFrame):
         self.color_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True,
                               padx=self.root.padding, pady=self.root.padding)
 
-        scan_button = tk.Button(self, text="ОЧИТАЈ\nБОЈУ", # fg="red",
+        scan_button = tk.Button(self, text="OČITAJ\nBOJU", # fg="red",
                                 padx=self.root.padding*4, pady=self.root.padding*2,
                                 command=partial(root.show_frame, 'ScanFrame'))
         scan_button.pack(side=tk.TOP, expand=True)
 
-        list_button = tk.Button(self, text="БАЗА\nБОЈА", # fg="green",
+        list_button = tk.Button(self, text="BAZA\nBOJA", # fg="green",
                                 padx=self.root.padding*4, pady=self.root.padding*2,
                                 command=partial(root.show_frame, 'ListFrame'))
         list_button.pack(side=tk.TOP, expand=True)
@@ -95,23 +95,23 @@ class ScanFrame(BojataFrame):
         pady = (0, self.root.padding)
         entry_font = (FONT_NAME, 20)
 
-        tk.Label(frame2, text="НАЗИВ БОЈЕ")\
+        tk.Label(frame2, text="NAZIV BOJE")\
             .grid(row=0, column=0, columnspan=2, sticky='nw')
         self.color_name = tk.StringVar(self)
         tk.Entry(frame2, textvariable=self.color_name, font=entry_font)\
             .grid(row=1, column=0, columnspan=2, sticky='we', pady=pady)
-        tk.Label(frame2, text="КАТЕГОРИЈА")\
+        tk.Label(frame2, text="KATEGORIJA")\
             .grid(row=2, column=0, columnspan=2, sticky='nw')
         self.color_category = tk.StringVar(self)
         categories = [c.value for c in bojata_db.ColorCategory]
         tk.OptionMenu(frame2, self.color_category, "", *categories)\
             .grid(row=3, column=0, columnspan=2, sticky='we', pady=pady)
-        tk.Label(frame2, text="АУТОР")\
+        tk.Label(frame2, text="AUTOR")\
             .grid(row=4, column=0, columnspan=2, sticky='nw')
         self.color_author = tk.StringVar(self)
         tk.Entry(frame2, textvariable=self.color_author, font=entry_font)\
             .grid(row=5, column=0, columnspan=2, sticky='we', pady=pady)
-        tk.Label(frame2, text="КОМЕНТАР")\
+        tk.Label(frame2, text="KOMENTAR")\
             .grid(row=6, column=0, columnspan=2, sticky='nw')
         self.color_comment = tk.StringVar(self)
         tk.Entry(frame2, textvariable=self.color_comment, font=entry_font)\
