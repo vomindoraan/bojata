@@ -79,7 +79,9 @@ class ScanFrame(BojataFrame):
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=2)
         self.columnconfigure(1, weight=1)
-        self.inputs = {}
+        self.il: dict[str, tk.Label] = {}     # Input labels
+        self.iv: dict[str, tk.Variable] = {}  # Input variables
+        self.ie: dict[str, tk.Widget] = {}    # Input entry widgets
 
         # Left half
         frame1 = tk.Frame(self)
@@ -87,9 +89,11 @@ class ScanFrame(BojataFrame):
                     padx=self.root.pad, pady=self.root.pad)
         self.color_swatch = tk.Label(frame1)
         self.color_swatch.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-        self.inputs['hex'] = tk.StringVar(self)
-        tk.Label(frame1, textvariable=self.inputs['hex'], font=(FONT_NAME, 36))\
-            .pack(side=tk.BOTTOM)
+
+        f = 'hex'
+        self.iv[f] = tk.StringVar(self)
+        self.il[f] = tk.Label(frame1, textvariable=self.iv[f], font=(FONT_NAME, 36))
+        self.il[f].pack(side=tk.BOTTOM)
 
         # Right half
         frame2 = tk.Frame(self)
@@ -100,43 +104,49 @@ class ScanFrame(BojataFrame):
         pady = (0, self.root.pad)
         font = (FONT_NAME, 18)
 
-        tk.Label(frame2, text="IME AUTORA ⁽*⁾")\
-            .grid(row=0, column=0, columnspan=2, sticky='nw')
-        self.inputs['author'] = tk.StringVar(self)
-        tk.Entry(frame2, textvariable=self.inputs['author'], font=font)\
-            .grid(row=1, column=0, columnspan=2, sticky='we', pady=pady)
+        f = 'author'
+        self.il[f] = tk.Label(frame2, text="IME AUTORA ⁽*⁾")
+        self.il[f].grid(row=0, column=0, columnspan=2, sticky='nw')
+        self.iv[f] = tk.StringVar(self)
+        self.ie[f] = tk.Entry(frame2, textvariable=self.iv[f], font=font)
+        self.ie[f].grid(row=1, column=0, columnspan=2, sticky='we', pady=pady)
 
-        tk.Label(frame2, text="NAZIV BOJE")\
-            .grid(row=2, column=0, columnspan=2, sticky='nw')
-        self.inputs['name'] = tk.StringVar(self)
-        tk.Entry(frame2, textvariable=self.inputs['name'], font=font)\
-            .grid(row=3, column=0, columnspan=2, sticky='we', pady=pady)
+        f = 'name'
+        self.il[f] = tk.Label(frame2, text="NAZIV BOJE")
+        self.il[f].grid(row=2, column=0, columnspan=2, sticky='nw')
+        self.iv[f] = tk.StringVar(self)
+        self.ie[f] = tk.Entry(frame2, textvariable=self.iv[f], font=font)
+        self.ie[f].grid(row=3, column=0, columnspan=2, sticky='we', pady=pady)
 
-        tk.Label(frame2, text="KATEGORIJA BOJE")\
-            .grid(row=4, column=0, columnspan=2, sticky='nw')
-        self.inputs['category'] = tk.StringVar(self)
+        f = 'category'
+        self.il[f] = tk.Label(frame2, text="KATEGORIJA BOJE")
+        self.il[f].grid(row=4, column=0, columnspan=2, sticky='nw')
+        self.iv[f] = tk.StringVar(self)
         categories = [c.value for c in bojata_db.ColorCategory]
-        tk.OptionMenu(frame2, self.inputs['category'], "", *categories)\
-            .grid(row=5, column=0, columnspan=2, sticky='we', pady=pady)
+        self.ie[f] = tk.OptionMenu(frame2, self.iv[f], "", *categories)
+        self.ie[f].grid(row=5, column=0, columnspan=2, sticky='we', pady=pady)
 
-        tk.Label(frame2, text="BROJ KASETE")\
-            .grid(row=6, column=0, columnspan=2, sticky='nw')
-        self.inputs['drawer'] = tk.StringVar(self)
+        f = 'drawer'
+        self.il[f] = tk.Label(frame2, text="BROJ KASETE")
+        self.il[f].grid(row=6, column=0, columnspan=2, sticky='nw')
+        self.iv[f] = tk.StringVar(self)
         drawers = range(1, DRAWER_COUNT+1)
-        tk.OptionMenu(frame2, self.inputs['drawer'], "", *drawers)\
-            .grid(row=7, column=0, columnspan=2, sticky='we', pady=pady)
+        self.ie[f] = tk.OptionMenu(frame2, self.iv[f], "", *drawers)
+        self.ie[f].grid(row=7, column=0, columnspan=2, sticky='we', pady=pady)
 
-        tk.Label(frame2, text="LOKACIJA")\
-            .grid(row=8, column=0, columnspan=2, sticky='nw')
-        self.inputs['location'] = tk.StringVar(self, DEFAULT_LOCATION)
-        tk.Entry(frame2, textvariable=self.inputs['location'], font=font)\
-            .grid(row=9, column=0, columnspan=2, sticky='we', pady=pady)
+        f = 'location'
+        self.il[f] = tk.Label(frame2, text="LOKACIJA")
+        self.il[f].grid(row=8, column=0, columnspan=2, sticky='nw')
+        self.iv[f] = tk.StringVar(self, DEFAULT_LOCATION)
+        self.ie[f] = tk.Entry(frame2, textvariable=self.iv[f], font=font)
+        self.ie[f].grid(row=9, column=0, columnspan=2, sticky='we', pady=pady)
 
-        tk.Label(frame2, text="KOMENTAR")\
-            .grid(row=10, column=0, columnspan=2, sticky='nw')
-        self.inputs['comment'] = tk.StringVar(self)
-        tk.Entry(frame2, textvariable=self.inputs['comment'], font=font)\
-            .grid(row=11, column=0, columnspan=2, sticky='we', pady=pady)
+        f = 'comment'
+        self.il[f] = tk.Label(frame2, text="KOMENTAR")
+        self.il[f].grid(row=10, column=0, columnspan=2, sticky='nw')
+        self.iv[f] = tk.StringVar(self)
+        self.ie[f] = tk.Entry(frame2, textvariable=self.iv[f], font=font)
+        self.ie[f].grid(row=11, column=0, columnspan=2, sticky='we', pady=pady)
 
         tk.Button(frame2, text="✔", fg='green', font=font, command=self.submit)\
             .grid(row=12, column=0, sticky='we', ipady=self.root.pad)
@@ -148,9 +158,16 @@ class ScanFrame(BojataFrame):
     def submit(self):
         input_values = {
             k: v.get() or None  # empty string → NULL
-            for k, v in self.inputs.items()
+            for k, v in self.iv.items()
         }
         input_values['datetime'] = datetime.now()
+
+        f = 'author'
+        if not input_values[f]:
+            self.ie[f].config(bg='pink')
+            return
+        else:
+            self.ie[f].config(bg='white')  # HACK: Widgets should be reset properly
 
         color = bojata_db.Color(**input_values)
         bojata_db.persist(color)
@@ -161,10 +178,14 @@ class ScanFrame(BojataFrame):
         root.show_frame('HomeFrame')
 
     def on_show_frame(self, event):
+        # Reset input fields
+        for v in self.iv.values():
+            v.set("")
+
         self.scanned_color = bojata.curr_color
         self.color_swatch.config(bg=self.scanned_color)
-        self.inputs['hex'].set(self.scanned_color)
-        # self.update()
+        self.iv['hex'].set(self.scanned_color)
+        self.update()
 
 
 class ListFrame(BojataFrame):
