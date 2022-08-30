@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import tkinter as tk
+from datetime import datetime
 from functools import partial
 
 import bojata
@@ -7,6 +8,8 @@ import bojata_db
 
 
 FONT_NAME = 'TkDefaultFont'
+DRAWER_COUNT = 10
+DEFAULT_LOCATION = "Kreativni distrikt, Novi Sad"
 
 
 class BojataRoot(tk.Tk):
@@ -95,38 +98,58 @@ class ScanFrame(BojataFrame):
         frame2.columnconfigure(0, weight=1)
         frame2.columnconfigure(1, weight=1)
         pady = (0, self.root.pad)
-        font = (FONT_NAME, 20)
+        font = (FONT_NAME, 18)
+
+        tk.Label(frame2, text="IME AUTORA ⁽*⁾")\
+            .grid(row=0, column=0, columnspan=2, sticky='nw')
+        self.inputs['author'] = tk.StringVar(self)
+        tk.Entry(frame2, textvariable=self.inputs['author'], font=font)\
+            .grid(row=1, column=0, columnspan=2, sticky='we', pady=pady)
 
         tk.Label(frame2, text="NAZIV BOJE")\
-            .grid(row=0, column=0, columnspan=2, sticky='nw')
+            .grid(row=2, column=0, columnspan=2, sticky='nw')
         self.inputs['name'] = tk.StringVar(self)
         tk.Entry(frame2, textvariable=self.inputs['name'], font=font)\
-            .grid(row=1, column=0, columnspan=2, sticky='we', pady=pady)
-        tk.Label(frame2, text="KATEGORIJA")\
-            .grid(row=2, column=0, columnspan=2, sticky='nw')
+            .grid(row=3, column=0, columnspan=2, sticky='we', pady=pady)
+
+        tk.Label(frame2, text="KATEGORIJA BOJE")\
+            .grid(row=4, column=0, columnspan=2, sticky='nw')
         self.inputs['category'] = tk.StringVar(self)
         categories = [c.value for c in bojata_db.ColorCategory]
         tk.OptionMenu(frame2, self.inputs['category'], "", *categories)\
-            .grid(row=3, column=0, columnspan=2, sticky='we', pady=pady)
-        tk.Label(frame2, text="AUTOR")\
-            .grid(row=4, column=0, columnspan=2, sticky='nw')
-        self.inputs['author'] = tk.StringVar(self)
-        tk.Entry(frame2, textvariable=self.inputs['author'], font=font)\
             .grid(row=5, column=0, columnspan=2, sticky='we', pady=pady)
-        tk.Label(frame2, text="KOMENTAR")\
+
+        tk.Label(frame2, text="BROJ KASETE")\
             .grid(row=6, column=0, columnspan=2, sticky='nw')
+        self.inputs['drawer'] = tk.StringVar(self)
+        drawers = range(1, DRAWER_COUNT+1)
+        tk.OptionMenu(frame2, self.inputs['drawer'], "", *drawers)\
+            .grid(row=7, column=0, columnspan=2, sticky='we', pady=pady)
+
+        tk.Label(frame2, text="LOKACIJA")\
+            .grid(row=8, column=0, columnspan=2, sticky='nw')
+        self.inputs['location'] = tk.StringVar(self, DEFAULT_LOCATION)
+        tk.Entry(frame2, textvariable=self.inputs['location'], font=font)\
+            .grid(row=9, column=0, columnspan=2, sticky='we', pady=pady)
+
+        tk.Label(frame2, text="KOMENTAR")\
+            .grid(row=10, column=0, columnspan=2, sticky='nw')
         self.inputs['comment'] = tk.StringVar(self)
         tk.Entry(frame2, textvariable=self.inputs['comment'], font=font)\
-            .grid(row=7, column=0, columnspan=2, sticky='we', pady=pady)
+            .grid(row=11, column=0, columnspan=2, sticky='we', pady=pady)
+
         tk.Button(frame2, text="✔", fg='green', font=font, command=self.submit)\
-            .grid(row=8, column=0, sticky='we', ipady=self.root.pad)
+            .grid(row=12, column=0, sticky='we', ipady=self.root.pad)
         tk.Button(frame2, text="❌", fg='red', font=font, command=self.cancel)\
-            .grid(row=8, column=1, sticky='we', ipady=self.root.pad)
+            .grid(row=12, column=1, sticky='we', ipady=self.root.pad)
 
         self.bind('<<ShowFrame>>', self.on_show_frame)
 
     def submit(self):
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        self.inputs['datetime'] = tk.StringVar(self, now)
         input_values = {k: v.get() for k, v in self.inputs.items()}
+
         color = bojata_db.Color(**input_values)
 
     def cancel(self):
