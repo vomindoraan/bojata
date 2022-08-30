@@ -113,6 +113,7 @@ def create_outlined_text(x, y, *args, **kw):
     canvas.create_text(x, y, *args, **kw)
 
 
+# TODO: Add x, y, w, h as parameters
 def start_printing(color):
     """Generate and print the image containing the selected color."""
     logging.debug("Generating image for %s...", color)

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import tkinter as tk
+import tkinter.messagebox
 from datetime import datetime
 from functools import partial
 
@@ -181,10 +182,20 @@ class ScanFrame(BojataFrame):
         color = bojata_db.Color(**input_values)
         bojata_db.persist(color)
 
+        self.print_prompt()
         root.show_frame('HomeFrame')
 
     def cancel(self):
         root.show_frame('HomeFrame')
+
+    def print_prompt(self):
+        # TODO: Replace with a custom dialog window
+        answer = tk.messagebox.askyesno(
+            "Štampa",
+            "Boja sačuvana u bazu. Da li želite ištampati list potvrde?",
+        )
+        if answer:
+            bojata.start_printing(self.scanned_color)
 
 
 class ListFrame(BojataFrame):
@@ -196,6 +207,6 @@ class ListFrame(BojataFrame):
 if __name__ == '__main__':
     root = BojataRoot()
     color_frame = root.frames['HomeFrame'].color_frame
-    bojata.init(frame_init=color_frame, cups_init=0)  # TODO: Set up CUPS
+    bojata.init(frame_init=color_frame)
     bojata_db.init()
     root.mainloop()
