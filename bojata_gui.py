@@ -19,7 +19,7 @@ class BojataRoot(tk.Tk):
         self.attributes('-fullscreen', True)
         self.protocol('WM_DELETE_WINDOW', exit)
         self.update()  # Update actual width and height
-        self.padding = self.winfo_width() // 100
+        self.pad = self.winfo_width() // 100
 
         tk.font.nametofont(FONT_NAME).configure(size=18)
 
@@ -30,11 +30,10 @@ class BojataRoot(tk.Tk):
 
         self.frames = {}
         for frame_cls in (HomeFrame, ScanFrame, ListFrame):
-            name = frame_cls.__name__
             frame = frame_cls(parent=container, root=self)
             frame.grid(row=0, column=0, sticky='nsew')
             frame.update()
-            self.frames[name] = frame
+            self.frames[frame_cls.__name__] = frame
 
         self.show_frame('HomeFrame')
 
@@ -56,15 +55,16 @@ class HomeFrame(BojataFrame):
 
         self.color_frame = tk.Frame(self)
         self.color_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True,
-                              padx=self.root.padding, pady=self.root.padding)
+                              padx=self.root.pad, pady=self.root.pad)
+        font = (FONT_NAME, 24)
 
-        scan_button = tk.Button(self, text="OČITAJ\nBOJU", # fg="red",
-                                padx=self.root.padding*4, pady=self.root.padding*2,
+        scan_button = tk.Button(self, text="OČITAJ\nBOJU", font=font,
+                                padx=self.root.pad*4, pady=self.root.pad*2,
                                 command=partial(root.show_frame, 'ScanFrame'))
         scan_button.pack(side=tk.TOP, expand=True)
 
-        list_button = tk.Button(self, text="BAZA\nBOJA", # fg="green",
-                                padx=self.root.padding*4, pady=self.root.padding*2,
+        list_button = tk.Button(self, text="BAZA\nBOJA", font=font,
+                                padx=self.root.pad*4, pady=self.root.pad*2,
                                 command=partial(root.show_frame, 'ListFrame'))
         list_button.pack(side=tk.TOP, expand=True)
 
@@ -76,54 +76,66 @@ class ScanFrame(BojataFrame):
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=2)
         self.columnconfigure(1, weight=1)
+        self.inputs = {}
 
         # Left half
         frame1 = tk.Frame(self)
         frame1.grid(row=0, column=0, sticky='nsew',
-                    padx=self.root.padding, pady=self.root.padding)
-        self.color_label = tk.Label(frame1)
-        self.color_label.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-        self.color_hex = tk.StringVar(self)
-        tk.Label(frame1, textvariable=self.color_hex, font=(FONT_NAME, 36))\
+                    padx=self.root.pad, pady=self.root.pad)
+        self.color_swatch = tk.Label(frame1)
+        self.color_swatch.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        self.inputs['hex'] = tk.StringVar(self)
+        tk.Label(frame1, textvariable=self.inputs['hex'], font=(FONT_NAME, 36))\
             .pack(side=tk.BOTTOM)
 
         # Right half
         frame2 = tk.Frame(self)
         frame2.grid(row=0, column=1, sticky='nsew',
-                    padx=self.root.padding, pady=self.root.padding)
+                    padx=self.root.pad, pady=self.root.pad)
         frame2.columnconfigure(0, weight=1)
-        pady = (0, self.root.padding)
-        entry_font = (FONT_NAME, 20)
+        frame2.columnconfigure(1, weight=1)
+        pady = (0, self.root.pad)
+        font = (FONT_NAME, 20)
 
         tk.Label(frame2, text="NAZIV BOJE")\
             .grid(row=0, column=0, columnspan=2, sticky='nw')
-        self.color_name = tk.StringVar(self)
-        tk.Entry(frame2, textvariable=self.color_name, font=entry_font)\
+        self.inputs['name'] = tk.StringVar(self)
+        tk.Entry(frame2, textvariable=self.inputs['name'], font=font)\
             .grid(row=1, column=0, columnspan=2, sticky='we', pady=pady)
         tk.Label(frame2, text="KATEGORIJA")\
             .grid(row=2, column=0, columnspan=2, sticky='nw')
-        self.color_category = tk.StringVar(self)
+        self.inputs['category'] = tk.StringVar(self)
         categories = [c.value for c in bojata_db.ColorCategory]
-        tk.OptionMenu(frame2, self.color_category, "", *categories)\
+        tk.OptionMenu(frame2, self.inputs['category'], "", *categories)\
             .grid(row=3, column=0, columnspan=2, sticky='we', pady=pady)
         tk.Label(frame2, text="AUTOR")\
             .grid(row=4, column=0, columnspan=2, sticky='nw')
-        self.color_author = tk.StringVar(self)
-        tk.Entry(frame2, textvariable=self.color_author, font=entry_font)\
+        self.inputs['author'] = tk.StringVar(self)
+        tk.Entry(frame2, textvariable=self.inputs['author'], font=font)\
             .grid(row=5, column=0, columnspan=2, sticky='we', pady=pady)
         tk.Label(frame2, text="KOMENTAR")\
             .grid(row=6, column=0, columnspan=2, sticky='nw')
-        self.color_comment = tk.StringVar(self)
-        tk.Entry(frame2, textvariable=self.color_comment, font=entry_font)\
+        self.inputs['comment'] = tk.StringVar(self)
+        tk.Entry(frame2, textvariable=self.inputs['comment'], font=font)\
             .grid(row=7, column=0, columnspan=2, sticky='we', pady=pady)
-        # TODO
+        tk.Button(frame2, text="✔", fg='green', font=font, command=self.submit)\
+            .grid(row=8, column=0, sticky='we', ipady=self.root.pad)
+        tk.Button(frame2, text="❌", fg='red', font=font, command=self.cancel)\
+            .grid(row=8, column=1, sticky='we', ipady=self.root.pad)
 
         self.bind('<<ShowFrame>>', self.on_show_frame)
 
+    def submit(self):
+        input_values = {k: v.get() for k, v in self.inputs.items()}
+        color = bojata_db.Color(**input_values)
+
+    def cancel(self):
+        root.show_frame('HomeFrame')
+
     def on_show_frame(self, event):
         self.scanned_color = bojata.curr_color
-        self.color_label.config(bg=self.scanned_color)
-        self.color_hex.set(self.scanned_color)
+        self.color_swatch.config(bg=self.scanned_color)
+        self.inputs['hex'].set(self.scanned_color)
         # self.update()
 
 
@@ -135,5 +147,5 @@ class ListFrame(BojataFrame):
 if __name__ == '__main__':
     root = BojataRoot()
     color_frame = root.frames['HomeFrame'].color_frame
-    bojata.init(frame_init=color_frame, cups_init=0)  # TODOL Set up CUPS
+    bojata.init(frame_init=color_frame, cups_init=0)  # TODO: Set up CUPS
     root.mainloop()
