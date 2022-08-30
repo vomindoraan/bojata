@@ -14,18 +14,12 @@
 #define SENSOR_S3  6
 #define SENSOR_OUT 7
 
-//#define R_MIN 600
-//#define R_MAX 110
-//#define G_MIN 750
-//#define G_MAX 110
-//#define B_MIN 600
-//#define B_MAX 110
 #define R_MIN 600
-#define R_MAX 80
+#define R_MAX 80  // 110
 #define G_MIN 750
-#define G_MAX 80
+#define G_MAX 80  // 110
 #define B_MIN 600
-#define B_MAX 80
+#define B_MAX 80  // 110
 
 // TFT_ILI9163C constants
 #define TFT_A0 9
@@ -99,9 +93,9 @@ void setup() {
     Serial.begin(BAUD_RATE);
 
     tft.begin();
-    tft.fillRect(86, 112, 43, 16, RED);
+    tft.fillRect(86, 112, 43, 16, BLUE);
     tft.fillRect(43, 112, 43, 16, GREEN);
-    tft.fillRect(0,  112, 43, 16, BLUE);
+    tft.fillRect(0,  112, 43, 16, RED);
 
     // Paint TFT screen in a thread
     tftThread.start(mbed::callback(paintScreen));
