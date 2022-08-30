@@ -75,8 +75,14 @@ class HomeFrame(BojataFrame):
 class ScanFrame(BojataFrame):
     def __init__(self, parent, root):
         super().__init__(parent, root)
-        self.reset_ui()
         self.bind('<<ShowFrame>>', self.on_show_frame)
+
+    def on_show_frame(self, event):
+        self.reset_ui()
+        self.scanned_color = bojata.curr_color
+        self.color_swatch.config(bg=self.scanned_color)
+        self.iv['hex'].set(self.scanned_color)
+        self.update()
 
     def reset_ui(self):
         for child in self.winfo_children():
@@ -179,13 +185,6 @@ class ScanFrame(BojataFrame):
 
     def cancel(self):
         root.show_frame('HomeFrame')
-
-    def on_show_frame(self, event):
-        self.reset_ui()
-        self.scanned_color = bojata.curr_color
-        self.color_swatch.config(bg=self.scanned_color)
-        self.iv['hex'].set(self.scanned_color)
-        self.update()
 
 
 class ListFrame(BojataFrame):
