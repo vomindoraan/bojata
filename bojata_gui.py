@@ -75,6 +75,12 @@ class HomeFrame(BojataFrame):
 class ScanFrame(BojataFrame):
     def __init__(self, parent, root):
         super().__init__(parent, root)
+        self.reset_ui()
+        self.bind('<<ShowFrame>>', self.on_show_frame)
+
+    def reset_ui(self):
+        for child in self.winfo_children():
+            child.destroy()
 
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=2)
@@ -153,8 +159,6 @@ class ScanFrame(BojataFrame):
         tk.Button(frame2, text="❌", fg='red', font=font, command=self.cancel)\
             .grid(row=12, column=1, sticky='we', ipady=self.root.pad)
 
-        self.bind('<<ShowFrame>>', self.on_show_frame)
-
     def submit(self):
         input_values = {
             k: v.get() or None  # empty string → NULL
@@ -162,12 +166,11 @@ class ScanFrame(BojataFrame):
         }
         input_values['datetime'] = datetime.now()
 
-        f = 'author'
-        if not input_values[f]:
-            self.ie[f].config(bg='pink')
-            return
-        else:
-            self.ie[f].config(bg='white')  # HACK: Widgets should be reset properly
+        required_fields = ['author']
+        for f in required_fields:
+            if not input_values[f]:
+                self.ie[f].config(bg='pink')
+                return
 
         color = bojata_db.Color(**input_values)
         bojata_db.persist(color)
@@ -178,10 +181,7 @@ class ScanFrame(BojataFrame):
         root.show_frame('HomeFrame')
 
     def on_show_frame(self, event):
-        # Reset input fields
-        for v in self.iv.values():
-            v.set("")
-
+        self.reset_ui()
         self.scanned_color = bojata.curr_color
         self.color_swatch.config(bg=self.scanned_color)
         self.iv['hex'].set(self.scanned_color)
