@@ -146,11 +146,16 @@ class ScanFrame(BojataFrame):
         self.bind('<<ShowFrame>>', self.on_show_frame)
 
     def submit(self):
-        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        self.inputs['datetime'] = tk.StringVar(self, now)
-        input_values = {k: v.get() for k, v in self.inputs.items()}
+        input_values = {
+            k: v.get() or None  # empty string → NULL
+            for k, v in self.inputs.items()
+        }
+        input_values['datetime'] = datetime.now()
 
         color = bojata_db.Color(**input_values)
+        bojata_db.persist(color)
+
+        root.show_frame('HomeFrame')
 
     def cancel(self):
         root.show_frame('HomeFrame')
@@ -165,10 +170,12 @@ class ScanFrame(BojataFrame):
 class ListFrame(BojataFrame):
     def __init__(self, parent, root):
         super().__init__(parent, root)
+        # TODO
 
 
 if __name__ == '__main__':
     root = BojataRoot()
     color_frame = root.frames['HomeFrame'].color_frame
     bojata.init(frame_init=color_frame, cups_init=0)  # TODO: Set up CUPS
+    bojata_db.init()
     root.mainloop()

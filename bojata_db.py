@@ -1,11 +1,13 @@
 import enum
 
-from sqlalchemy import Column, DateTime, Enum, Integer, String
+from sqlalchemy import Column, DateTime, Enum, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import Session
 from sqlalchemy_utils.types.color import ColorType
 
 
 Base = declarative_base()
+engine = None
 
 
 class ColorCategory(enum.Enum):
@@ -34,3 +36,15 @@ class Color(Base):
     location = Column(String(256))
     datetime = Column(DateTime)
     comment = Column(String(2048))
+
+
+def init():
+    global engine
+    engine = create_engine('sqlite:///bojata.db', echo=True, future=True)
+    Base.metadata.create_all(engine)
+
+
+def persist(*objs):
+    with Session(engine) as session:
+        session.add_all(objs)
+        session.commit()
