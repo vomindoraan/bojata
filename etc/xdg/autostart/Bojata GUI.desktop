@@ -1,0 +1,2 @@
+[Desktop Entry]
+Exec=lxterminal --command "/bin/bash -c 'sudo nice -n -20 /usr/bin/python3 /home/pi/bojata/bojata_gui.py'"
