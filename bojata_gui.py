@@ -7,6 +7,8 @@ import tkinter.messagebox
 from datetime import datetime
 from functools import partial
 
+from PIL import Image, ImageDraw
+
 import bojata
 import bojata_db
 
@@ -203,8 +205,16 @@ class ScanFrame(BojataFrame):
             "Boja sačuvana u bazu. Da li želite ištampati list potvrde?",
         )
         if answer:
-            bojata.start_printing(self.scanned_color,
-                                  template='template_rev0.6.png')
+            img = self.generate_image(self.scanned_color)
+            bojata.start_printing(self.scanned_color, img)
+
+    def generate_image(self, color):
+        with Image.open('template_rev0.6.png') as img:
+            img.resize((874, 1240))  # A5 @ 150 PPI
+            draw = ImageDraw.Draw(img)
+            bojata.draw_swatch(draw, 80, 56, 256, 168, color)
+            draw.text((432, 96), text=color, font=bojata.PRINT_FONT, fill=color)
+            return img
 
 
 class ListFrame(BojataFrame):
