@@ -125,7 +125,7 @@ def start_printing(color, img=None):
         logging.debug("Generating image for %s...", color)
         img = Image.new(mode='RGB', size=(874, 1240), color='white')  # A5 @ 150 PPI
         draw = ImageDraw.Draw(img)
-        draw_swatch(draw, 80, 56, 256, 168, color)
+        draw_swatch(draw, color, x=80, y=56, w=256, h=168)
         draw.text((432, 96), text=color, font=PRINT_FONT, fill=color)
     img.save(PRINT_FILENAME, 'PNG')
 
@@ -136,7 +136,7 @@ def start_printing(color, img=None):
         cups.printFile(printer, PRINT_FILENAME, title, options)
 
 
-def draw_swatch(draw, x, y, w, h, color):
+def draw_swatch(draw, color, x, y, w, h):
     w_color, w_rgb, h_rgb = swatch_bounds(w, h)
     draw.rectangle((x, y, x+w_color, y+h), fill=color)
     for i, sc in enumerate(SWATCH_COLORS):

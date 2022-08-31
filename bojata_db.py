@@ -28,14 +28,14 @@ class Color(Base):
     __tablename__ = 'color'
 
     id = Column(Integer, primary_key=True)
-    author = Column(String(256), nullable=False)
+    author = Column(String, nullable=False)
     hex = Column(ColorType, nullable=False)
-    name = Column(String(256))
+    name = Column(String)
     category = Column(Enum(ColorCategory))
     drawer = Column(Integer)
-    location = Column(String(256))
-    datetime = Column(DateTime)
-    comment = Column(String(2048))
+    comment = Column(String)
+    location = Column(String)
+    datetime = Column(String, nullable=False)
 
 
 def init():

@@ -2,12 +2,13 @@
 import logging
 import os
 import sys
+import textwrap
 import tkinter as tk
 import tkinter.messagebox
 from datetime import datetime
 from functools import partial
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 import bojata
 import bojata_db
@@ -157,19 +158,22 @@ class ScanFrame(BojataFrame):
         self.ie[f] = tk.OptionMenu(frame2, self.iv[f], "", *drawers)
         self.ie[f].grid(row=7, column=0, columnspan=2, sticky='we', pady=pady)
 
-        f = 'location'
-        self.il[f] = tk.Label(frame2, text="LOKACIJA")
+        f = 'comment'
+        self.il[f] = tk.Label(frame2, text="KOMENTAR")
         self.il[f].grid(row=8, column=0, columnspan=2, sticky='nw')
-        self.iv[f] = tk.StringVar(self, DEFAULT_LOCATION)
+        self.iv[f] = tk.StringVar(self)
         self.ie[f] = tk.Entry(frame2, textvariable=self.iv[f], font=font)
         self.ie[f].grid(row=9, column=0, columnspan=2, sticky='we', pady=pady)
 
-        f = 'comment'
-        self.il[f] = tk.Label(frame2, text="KOMENTAR")
+        f = 'location'
+        self.il[f] = tk.Label(frame2, text="LOKACIJA")
         self.il[f].grid(row=10, column=0, columnspan=2, sticky='nw')
-        self.iv[f] = tk.StringVar(self)
+        self.iv[f] = tk.StringVar(self, DEFAULT_LOCATION)
         self.ie[f] = tk.Entry(frame2, textvariable=self.iv[f], font=font)
         self.ie[f].grid(row=11, column=0, columnspan=2, sticky='we', pady=pady)
+
+        f = 'datetime'
+        self.iv[f] = tk.StringVar(self, datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
         tk.Button(frame2, text="✔", fg='green', font=font, command=self.submit)\
             .grid(row=12, column=0, sticky='we', ipady=self.root.pad)
@@ -181,7 +185,6 @@ class ScanFrame(BojataFrame):
             k: v.get().strip() or None  # empty string → NULL
             for k, v in self.iv.items()
         }
-        input_values['datetime'] = datetime.now()
 
         required_fields = ['author']
         for f in required_fields:
@@ -205,15 +208,48 @@ class ScanFrame(BojataFrame):
             "Boja sačuvana u bazu. Da li želite ištampati list potvrde?",
         )
         if answer:
-            img = self.generate_image(self.scanned_color)
-            bojata.start_printing(self.scanned_color, img)
+            bojata.start_printing(self.scanned_color, self.generate_image())
 
-    def generate_image(self, color):
+    LARGE_FONT = ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf', 96)
+    SMALL_FONT = ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf', 24)
+
+    def generate_image(self):
         with Image.open('template_rev0.6.png') as img:
             img.resize((874, 1240))  # A5 @ 150 PPI
             draw = ImageDraw.Draw(img)
-            bojata.draw_swatch(draw, 80, 56, 256, 168, color)
-            draw.text((432, 96), text=color, font=bojata.PRINT_FONT, fill=color)
+
+            bojata.draw_swatch(draw, self.scanned_color, x=80, y=56, w=256, h=168)
+            text = textwrap.fill(self.scanned_color, width=50, max_lines=1)
+            draw.text((432, 96), text, font=self.LARGE_FONT, fill=self.scanned_color)
+
+            value = self.iv['author'].get()
+            text = textwrap.fill(value, width=50, max_lines=1)
+            draw.text((96, 308), text, font=self.SMALL_FONT, fill='black')
+
+            value = self.iv['name'].get()
+            text = textwrap.fill(value, width=50, max_lines=1)
+            draw.text((96, 436), text, font=self.SMALL_FONT, fill='black')
+
+            value = self.iv['category'].get()
+            text = textwrap.fill(value, width=50, max_lines=1)
+            draw.text((96, 566), text, font=self.SMALL_FONT, fill='black')
+
+            value = self.iv['drawer'].get()
+            text = textwrap.fill(value, width=50, max_lines=1)
+            draw.text((96, 692), text, font=self.SMALL_FONT, fill='black')
+
+            value = self.iv['comment'].get()
+            text = textwrap.fill(value, width=50, max_lines=5)
+            draw.text((96, 820), text, font=self.SMALL_FONT, fill='black')
+
+            value = self.iv['location'].get()
+            text = textwrap.fill(value, width=24, max_lines=3)
+            draw.text((96, 1076), text, font=self.SMALL_FONT, fill='black')
+
+            value = self.iv['datetime'].get()
+            text = textwrap.fill(value, width=24, max_lines=3)
+            draw.text((472, 1076), text, font=self.SMALL_FONT, fill='black')
+
             return img
 
 
