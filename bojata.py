@@ -4,6 +4,7 @@ import os
 import re
 import tkinter as tk
 import tkinter.font
+from typing import Union
 
 from PIL import Image, ImageDraw, ImageFont
 from cups import Connection as CupsConnection
@@ -31,7 +32,7 @@ SWATCH_COLORS = ('#ff0000', '#00ff00', '#0000ff')
 # Globals
 serial:     Serial
 cups:       CupsConnection
-frame:      tk.Tk
+frame:      Union[tk.Frame, tk.Tk]
 canvas:     tk.Canvas
 curr_color: str
 
@@ -145,7 +146,7 @@ def swatch_bounds(w, h):
 
 
 def init(*, serial_init: Serial = None, cups_init: CupsConnection = None,
-         frame_init: tk.Tk = None):
+         frame_init: tk.Frame = None):
     """Initialize connections to serial device and CUPS server, and create a
     canvas in which colors will be displayed.
     """
