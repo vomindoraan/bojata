@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+import logging
+import os
+import sys
 import tkinter as tk
 import tkinter.messagebox
 from datetime import datetime
@@ -42,9 +45,14 @@ class BojataRoot(tk.Tk):
         self.show_frame('HomeFrame')
 
     def show_frame(self, name):
-        frame = self.frames[name]
-        frame.tkraise()
-        frame.event_generate('<<ShowFrame>>')
+        self.curr_frame = self.frames[name]
+        self.curr_frame.tkraise()
+        self.curr_frame.event_generate('<<ShowFrame>>')
+
+    def rerun_app(self):
+        if self.curr_frame is self.frames['HomeFrame']:
+            logging.info("Rerunning app...")
+            os.execv(sys.executable, ['python'] + sys.argv)
 
 
 class BojataFrame(tk.Frame):
@@ -208,5 +216,6 @@ if __name__ == '__main__':
     root = BojataRoot()
     color_frame = root.frames['HomeFrame'].color_frame
     bojata.init(frame_init=color_frame)
+    bojata.serial_buffer_cleanup = root.rerun_app  # Monkey patch cleanup handler
     bojata_db.init()
     root.mainloop()
