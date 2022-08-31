@@ -119,11 +119,19 @@ def create_outlined_text(x, y, *args, **kw):
 
 
 # TODO: Add x, y, w, h as parameters
-def start_printing(color):
+def start_printing(color, template=None):
     """Generate and print the image containing the selected color."""
+    size = (874, 1240)  # A5 @ 150 PPI
+    if template is not None:
+        with Image.open(template) as template_img:
+            img = template_img.resize(size).copy()
+    else:
+        img = Image.new(mode='RGB', size=size, color='white')
+
     logging.debug("Generating image for %s...", color)
-    img = Image.new(mode='RGB', size=(874, 1240), color='white')  # A5 @ 150 PPI
-    img_draw_swatch(img, 600, 56, 256, 168, color)
+    draw = ImageDraw.Draw(img)
+    draw_swatch(draw, 80, 56, 256, 168, color)
+    draw.text((432, 96), text=color, font=PRINT_FONT, fill=color)
     img.save(PRINT_FILENAME, 'PNG')
 
     logging.info("Starting printing for %s...", color)
@@ -133,13 +141,11 @@ def start_printing(color):
         cups.printFile(printer, PRINT_FILENAME, title, options)
 
 
-def img_draw_swatch(img, x, y, w, h, color):
-    d = ImageDraw.Draw(img)
+def draw_swatch(draw, x, y, w, h, color):
     w_color, w_rgb, h_rgb = swatch_bounds(w, h)
-    d.rectangle((x, y, x+w_color, y+h), fill=color)
+    draw.rectangle((x, y, x+w_color, y+h), fill=color)
     for i, sc in enumerate(SWATCH_COLORS):
-        d.rectangle((x+w_color, y+i*h_rgb, x+w, y+(i+1)*h_rgb), fill=sc)
-    d.text((96, 96), color, font=PRINT_FONT, fill=color)
+        draw.rectangle((x+w_color, y+i*h_rgb, x+w, y+(i+1)*h_rgb), fill=sc)
 
 
 def swatch_bounds(w, h):

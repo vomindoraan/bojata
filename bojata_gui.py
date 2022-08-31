@@ -203,7 +203,8 @@ class ScanFrame(BojataFrame):
             "Boja sačuvana u bazu. Da li želite ištampati list potvrde?",
         )
         if answer:
-            bojata.start_printing(self.scanned_color)
+            bojata.start_printing(self.scanned_color,
+                                  template='template_rev0.6.png')
 
 
 class ListFrame(BojataFrame):
