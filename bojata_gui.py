@@ -92,9 +92,9 @@ class ScanFrame(BojataFrame):
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=2)
         self.columnconfigure(1, weight=1)
-        self.il: dict[str, tk.Label] = {}     # Input labels
-        self.iv: dict[str, tk.Variable] = {}  # Input variables
-        self.ie: dict[str, tk.Widget] = {}    # Input entry widgets
+        self.il: dict[str, tk.Label] = {}      # Input labels
+        self.iv: dict[str, tk.StringVar] = {}  # Input variables
+        self.ie: dict[str, tk.Widget] = {}     # Input entry widgets
 
         # Left half
         frame1 = tk.Frame(self)
@@ -168,7 +168,7 @@ class ScanFrame(BojataFrame):
 
     def submit(self):
         input_values = {
-            k: v.get() or None  # empty string → NULL
+            k: v.get().strip() or None  # empty string → NULL
             for k, v in self.iv.items()
         }
         input_values['datetime'] = datetime.now()
