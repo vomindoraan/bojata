@@ -14,12 +14,18 @@
 #define SENSOR_S3  6
 #define SENSOR_OUT 7
 
-#define R_MIN 600
-#define R_MAX 80  // 110
-#define G_MIN 750
-#define G_MAX 80  // 110
-#define B_MIN 600
-#define B_MAX 80  // 110
+// #define R_MIN 600
+// #define R_MAX 80
+// #define G_MIN 750
+// #define G_MAX 80
+// #define B_MIN 600
+// #define B_MAX 80
+#define R_MIN 3000
+#define R_MAX 1200
+#define G_MIN 4000
+#define G_MAX 1200
+#define B_MIN 3000
+#define B_MAX 1200
 
 // TFT_ILI9163C constants
 #define TFT_A0 9
@@ -113,33 +119,33 @@ void loop() {
     digitalWrite(SENSOR_S3, LOW);
     // Read output frequency
     freq = pulseIn(SENSOR_OUT, LOW);
+//    Serial.print(freq);
+//    Serial.print(" ");
     // Remap frequency to RGB888 and RGB565 ranges
     r8 = constrain(map(freq, R_MIN, R_MAX, 0, 255), 0, 255);
     r5 = constrain(map(freq, R_MIN, R_MAX, 0,  31), 0,  31);
-//    Serial.print(r5);
-//    Serial.print(" ");
 
     // Set green filtered photodiodes to be read
     digitalWrite(SENSOR_S2, HIGH);
     digitalWrite(SENSOR_S3, HIGH);
     // Read output frequency
     freq = pulseIn(SENSOR_OUT, LOW);
+//    Serial.print(freq);
+//    Serial.print(" ");
     // Remap frequency to RGB888 and RGB565 ranges
     g8 = constrain(map(freq, G_MIN, G_MAX, 0, 255), 0, 255);
     g6 = constrain(map(freq, G_MIN, G_MAX, 0,  63), 0,  63);
-//    Serial.print(g6);
-//    Serial.print(" ");
 
     // Set blue filtered photodiodes to be read
     digitalWrite(SENSOR_S2, LOW);
     digitalWrite(SENSOR_S3, HIGH);
     // Read output frequency
     freq = pulseIn(SENSOR_OUT, LOW);
+//    Serial.print(freq);
+//    Serial.println(" ");
     // Remap frequency to RGB888 and RGB565 ranges
     b8 = constrain(map(freq, B_MIN, B_MAX, 0, 255), 0, 255);
     b5 = constrain(map(freq, B_MIN, B_MAX, 0,  31), 0,  31);
-//    Serial.print(b5);
-//    Serial.println();
 
     // Format 24-bit RGB888 value as string
     char rgb888[13];
