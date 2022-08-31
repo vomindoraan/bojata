@@ -3,7 +3,6 @@ import enum
 from sqlalchemy import Column, DateTime, Enum, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
-from sqlalchemy_utils.types.color import ColorType
 
 
 Base = declarative_base()
@@ -28,14 +27,14 @@ class Color(Base):
     __tablename__ = 'color'
 
     id = Column(Integer, primary_key=True)
-    author = Column(String, nullable=False)
-    hex = Column(ColorType, nullable=False)
-    name = Column(String)
+    author = Column(String(50), nullable=False)
+    hex = Column(String(7), nullable=False)
+    name = Column(String(50))
     category = Column(Enum(ColorCategory))
     drawer = Column(Integer)
-    comment = Column(String)
-    location = Column(String)
-    datetime = Column(String, nullable=False)
+    comment = Column(String(250))
+    location = Column(String(72))
+    datetime = Column(String(20), nullable=False)
 
 
 def init():
