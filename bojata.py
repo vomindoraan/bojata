@@ -52,6 +52,12 @@ def serial_connect():
                  serial.port, SERIAL_BAUD_RATE)
 
 
+def serial_buffer_cleanup():
+    logging.info("Discarding %d buffered bytes", serial.in_waiting)
+    serial.reset_input_buffer()
+    # os.execv(sys.executable, ['python'] + sys.argv)
+
+
 def task():
     """Read RGB value from serial, display it in the frame, and (optionally)
     send it to be printed.
@@ -60,11 +66,9 @@ def task():
         if not serial.is_open:
             serial_connect()
 
-        # Discard buffered bytes if they are arriving too quickly
+        # Clean up buffered bytes if they are arriving too quickly
         if serial.in_waiting > SERIAL_BUFFER_LIMIT:
-            logging.info("Discarding %d buffered bytes", serial.in_waiting)
-            serial.reset_input_buffer()
-            # os.execv(sys.executable, ['python'] + sys.argv)
+            serial_buffer_cleanup()
 
         # Read the upcoming line and check if it's a valid RGB message
         line = serial.readline().decode('utf8')
