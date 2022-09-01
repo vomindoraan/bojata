@@ -6,6 +6,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
 
 
+DRAWER_COUNT = 10
+DEFAULT_LOCATION = "Kreativni distrikt, Novi Sad"
+
 Base = declarative_base()
 engine = None
 

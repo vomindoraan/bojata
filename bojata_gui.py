@@ -13,9 +13,6 @@ import bojata_db
 
 
 FONT_NAME = 'TkDefaultFont'
-DRAWER_COUNT = 10
-DEFAULT_LOCATION = "Kreativni distrikt, Novi Sad"
-
 PRINT_FONT_NAME = '/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf'
 PRINT_FONT = ImageFont.truetype(PRINT_FONT_NAME, 24)
 PRINT_FONT_LARGE = ImageFont.truetype(PRINT_FONT_NAME, 96)
@@ -155,7 +152,7 @@ class ScanFrame(BojataFrame):
         self.il[f] = tk.Label(frame2, text="BROJ KASETE")
         self.il[f].grid(row=6, column=0, columnspan=2, sticky='nw')
         self.iv[f] = tk.StringVar(self)
-        drawers = range(1, DRAWER_COUNT+1)
+        drawers = range(1, bojata_db.DRAWER_COUNT+1)
         self.ie[f] = tk.OptionMenu(frame2, self.iv[f], "", *drawers)
         self.ie[f].grid(row=7, column=0, columnspan=2, sticky='we',
                         pady=self.root.halfpad)
@@ -171,7 +168,7 @@ class ScanFrame(BojataFrame):
         f = 'location'
         self.il[f] = tk.Label(frame2, text="LOKACIJA")
         self.il[f].grid(row=10, column=0, columnspan=2, sticky='nw')
-        self.iv[f] = tk.StringVar(self, DEFAULT_LOCATION)
+        self.iv[f] = tk.StringVar(self, bojata_db.DEFAULT_LOCATION)
         self.ie[f] = tk.Entry(frame2, textvariable=self.iv[f], font=self.root.font)
         self.ie[f].grid(row=11, column=0, columnspan=2, sticky='we',
                         pady=self.root.halfpad)
