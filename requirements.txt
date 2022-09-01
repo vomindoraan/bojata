@@ -1,4 +1,4 @@
-pandas==1.4.4
+pandas==1.1.5
 pandastable==0.13.0
 Pillow==9.2.0
 pycups==2.0.1
