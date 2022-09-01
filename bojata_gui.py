@@ -5,6 +5,7 @@ import tkinter.messagebox
 from datetime import datetime
 from functools import partial
 
+import pandas as pd
 from pandastable import Table, TableModel
 from PIL import Image, ImageDraw, ImageFont
 
@@ -254,12 +255,25 @@ class ScanFrame(BojataFrame):
 
 
 class TableFrame(BojataFrame):
+    COLUMN_MAPPING = {
+        'hex':      "Boja",
+        'author':   "Autor",
+        'name':     "Naziv boje",
+        'category': "Kategorija boje",
+        'drawer':   "Broj kasete",
+        'comment':  "Komentar",
+        'location': "Mesto",
+        'datetime': "Vreme",
+    }
+
     def __init__(self, parent, root):
         super().__init__(parent, root)
         frame = tk.Frame(self)
         frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True,
                    padx=self.root.pad, pady=self.root.pad)
-        self.table = Table(frame)
+
+        df = pd.DataFrame(columns=self.COLUMN_MAPPING.values())
+        self.table = Table(frame, dataframe=df, maxcellwidth=200)
         self.table.show()
 
         tk.Button(self, text="NAZAD", font=self.root.font_medium,
@@ -268,8 +282,16 @@ class TableFrame(BojataFrame):
             .pack(side=tk.TOP, pady=self.root.halfpad)
 
     def on_show_frame(self, event):
-        data = bojata_db.Color.read_data()
-        self.table.updateModel(TableModel(data))
+        df = bojata_db.Color.read_data(self.COLUMN_MAPPING)
+        self.table.updateModel(TableModel(df))
+
+        # Color cells in hex column based on values
+        if not df.empty:
+            self.table.setRowColors(rows=0, cols=[0], clr='white')
+            for row in range(df.shape[0]):
+                color = df.at[row, "Boja"]
+                self.table.rowcolors["Boja"][row] = color
+
         self.table.redraw()
 
 

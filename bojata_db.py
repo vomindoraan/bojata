@@ -1,6 +1,6 @@
 import enum
 
-import pandas
+import pandas as pd
 from sqlalchemy import Column, DateTime, Enum, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
@@ -41,9 +41,12 @@ class Color(Base):
     datetime = Column(String(20), nullable=False)
 
     @classmethod
-    def read_data(cls):
-        return pandas.read_sql_table(cls.__tablename__, engine,
-                                     parse_dates=['datetime'])
+    def read_data(cls, column_mapping):
+        columns = column_mapping.keys()
+        df = pd.read_sql_table(cls.__tablename__, engine,
+                               columns=columns, parse_dates=['datetime'])
+        df.rename(columns=column_mapping, inplace=True)
+        return df
 
 
 def init():
