@@ -35,7 +35,7 @@ class Color(Base):
     hex = Column(String(7), nullable=False)
     name = Column(String(50))
     category = Column(Enum(ColorCategory))
-    drawer = Column(Integer)
+    drawer = Column(String(50))
     comment = Column(String(250))
     location = Column(String(72))
     datetime = Column(String(20), nullable=False)
