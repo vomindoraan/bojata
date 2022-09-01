@@ -36,10 +36,9 @@ class BojataRoot(tk.Tk):
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for frame_cls in (HomeFrame, ScanFrame, ListFrame):
+        for frame_cls in (HomeFrame, ScanFrame, TableFrame):
             frame = frame_cls(parent=container, root=self)
             frame.grid(row=0, column=0, sticky='nsew')
-            frame.update()
             self.frames[frame_cls.__name__] = frame
 
         self.show_frame('HomeFrame')
@@ -48,12 +47,17 @@ class BojataRoot(tk.Tk):
         self.active_frame = self.frames[name]
         self.active_frame.tkraise()
         self.active_frame.event_generate('<<ShowFrame>>')
+        self.update()
 
 
 class BojataFrame(tk.Frame):
     def __init__(self, parent, root):
         super().__init__(parent)
         self.root = root
+        self.bind('<<ShowFrame>>', self.on_show_frame)
+
+    def on_show_frame(self, event):
+        pass
 
 
 class HomeFrame(BojataFrame):
@@ -65,30 +69,26 @@ class HomeFrame(BojataFrame):
                               padx=self.root.pad, pady=self.root.pad)
         font = (FONT_NAME, 24)
 
-        scan_button = tk.Button(self, text="OČITAJ\nBOJU", font=font,
-                                padx=self.root.pad*4, pady=self.root.pad*2,
-                                command=partial(root.show_frame, 'ScanFrame'))
-        scan_button.pack(side=tk.TOP, expand=True)
+        tk.Button(self, text="OČITAJ\nBOJU", font=font,
+                  padx=self.root.pad*4, pady=self.root.pad*2,
+                  command=partial(root.show_frame, 'ScanFrame'))\
+            .pack(side=tk.TOP, expand=True)
 
-        list_button = tk.Button(self, text="BAZA\nBOJA", font=font,
-                                padx=self.root.pad*4, pady=self.root.pad*2,
-                                command=partial(root.show_frame, 'ListFrame'))
-        list_button.pack(side=tk.TOP, expand=True)
+        tk.Button(self, text="BAZA\nBOJA", font=font,
+                  padx=self.root.pad*4, pady=self.root.pad*2,
+                  command=partial(root.show_frame, 'TableFrame'))\
+            .pack(side=tk.TOP, expand=True)
 
 
 class ScanFrame(BojataFrame):
-    def __init__(self, parent, root):
-        super().__init__(parent, root)
-        self.bind('<<ShowFrame>>', self.on_show_frame)
-
     def on_show_frame(self, event):
-        self.reset_ui()
+        self.reinit_ui()
         self.scanned_color = bojata.curr_color
         self.color_swatch.config(bg=self.scanned_color)
         self.iv['hex'].set(self.scanned_color)
         self.update()
 
-    def reset_ui(self):
+    def reinit_ui(self):
         for child in self.winfo_children():
             child.destroy()
 
@@ -188,10 +188,10 @@ class ScanFrame(BojataFrame):
         bojata_db.persist(color)
 
         self.print_prompt()
-        root.show_frame('HomeFrame')
+        self.root.show_frame('HomeFrame')
 
     def cancel(self):
-        root.show_frame('HomeFrame')
+        self.root.show_frame('HomeFrame')
 
     def print_prompt(self):
         # TODO: Replace with a custom dialog window
@@ -245,7 +245,7 @@ class ScanFrame(BojataFrame):
             return img
 
 
-class ListFrame(BojataFrame):
+class TableFrame(BojataFrame):
     def __init__(self, parent, root):
         super().__init__(parent, root)
         # TODO
