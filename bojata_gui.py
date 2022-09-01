@@ -5,6 +5,7 @@ import tkinter.messagebox
 from datetime import datetime
 from functools import partial
 
+from pandastable import Table, TableModel
 from PIL import Image, ImageDraw, ImageFont
 
 import bojata
@@ -248,7 +249,13 @@ class ScanFrame(BojataFrame):
 class TableFrame(BojataFrame):
     def __init__(self, parent, root):
         super().__init__(parent, root)
-        # TODO
+        self.table = Table(self)
+        self.table.show()
+
+    def on_show_frame(self, event):
+        data = bojata_db.Color.read_data()
+        self.table.updateModel(TableModel(data))
+        self.table.redraw()
 
 
 if __name__ == '__main__':

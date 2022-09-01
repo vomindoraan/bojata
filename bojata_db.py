@@ -1,5 +1,6 @@
 import enum
 
+import pandas
 from sqlalchemy import Column, DateTime, Enum, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
@@ -36,10 +37,15 @@ class Color(Base):
     location = Column(String(72))
     datetime = Column(String(20), nullable=False)
 
+    @classmethod
+    def read_data(cls):
+        return pandas.read_sql_table(cls.__tablename__, engine,
+                                     parse_dates=['datetime'])
+
 
 def init():
     global engine
-    engine = create_engine('sqlite:///bojata.db', echo=True, future=True)
+    engine = create_engine('sqlite:///bojata.db', echo=True)
     Base.metadata.create_all(engine)
 
 
