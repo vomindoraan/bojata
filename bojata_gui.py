@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-import logging
-import os
-import sys
 import textwrap
 import tkinter as tk
 import tkinter.messagebox
@@ -48,14 +45,9 @@ class BojataRoot(tk.Tk):
         self.show_frame('HomeFrame')
 
     def show_frame(self, name):
-        self.curr_frame = self.frames[name]
-        self.curr_frame.tkraise()
-        self.curr_frame.event_generate('<<ShowFrame>>')
-
-    def rerun_app(self):
-        if self.curr_frame is self.frames['HomeFrame']:
-            logging.info("Rerunning app...")
-            os.execv(sys.executable, ['python'] + sys.argv)
+        self.active_frame = self.frames[name]
+        self.active_frame.tkraise()
+        self.active_frame.event_generate('<<ShowFrame>>')
 
 
 class BojataFrame(tk.Frame):
@@ -261,8 +253,15 @@ class ListFrame(BojataFrame):
 
 if __name__ == '__main__':
     root = BojataRoot()
-    color_frame = root.frames['HomeFrame'].color_frame
-    bojata.init(frame_init=color_frame)
-    bojata.serial_buffer_cleanup = root.rerun_app  # Monkey patch cleanup handler
+    home_frame = root.frames['HomeFrame']
+
+    # Monkey patch serial buffer cleanup to only execute when home frame is active
+    orig_cleanup = bojata.serial_buffer_cleanup
+    def patched_cleanup():
+        if root.active_frame is home_frame:
+            orig_cleanup()
+    bojata.serial_buffer_cleanup = patched_cleanup
+
+    bojata.init(frame_init=home_frame.color_frame)
     bojata_db.init()
     root.mainloop()

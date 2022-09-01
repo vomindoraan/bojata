@@ -2,6 +2,7 @@
 import logging
 import os
 import re
+import sys
 import tkinter as tk
 import tkinter.font
 from typing import Union
@@ -55,7 +56,7 @@ def serial_connect():
 def serial_buffer_cleanup():
     logging.info("Discarding %d buffered bytes", serial.in_waiting)
     serial.reset_input_buffer()
-    # os.execv(sys.executable, ['python'] + sys.argv)
+    os.execv(sys.executable, ['python'] + sys.argv)  # HACK
 
 
 def task():
