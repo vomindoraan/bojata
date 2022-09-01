@@ -274,7 +274,7 @@ class TableFrame(BojataFrame):
 
         df = pd.DataFrame(columns=self.COLUMN_MAPPING.values())
         self.table = Table(frame, dataframe=df, maxcellwidth=200)
-        self.rowselectedcolor = None  # Disable selected row highlighting
+        self.table.drawSelectedRow = lambda: None  # Disable selected row highlighting
         self.table.show()
 
         tk.Button(self, text="NAZAD", font=self.root.font_medium,
