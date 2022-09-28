@@ -23,7 +23,7 @@ class BojataRoot(tk.Tk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.title('bojata')
+        self.title('Bojata GUI')
         self.geometry(f'{self.winfo_screenwidth()}x{self.winfo_screenheight()}')
         self.attributes('-fullscreen', True)
         self.protocol('WM_DELETE_WINDOW', exit)
@@ -307,6 +307,6 @@ if __name__ == '__main__':
             orig_cleanup()
     bojata.serial_buffer_cleanup = patched_cleanup
 
-    bojata.init(frame_init=home_frame.color_frame)
+    bojata.init(init_frame=home_frame.color_frame)
     bojata_db.init()
     root.mainloop()

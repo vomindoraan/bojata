@@ -17,7 +17,7 @@ logging.basicConfig(format='[%(levelname)s] %(asctime)s - %(message)s',
                     level=os.getenv('LOGLEVEL', 'INFO').upper())
 
 SERIAL_BAUD_RATE = 115200
-SERIAL_BUFFER_LIMIT = 12  # Around 1 RGB message (reached in ~4 mins of runtime)
+SERIAL_BUFFER_LIMIT = 12  # Around 1 whole RGB message (reached in ~4 mins of runtime on RPi 4)
 TASK_DELAY = 0
 RECONNECT_DELAY = 1000
 PRINT_DELAY = 10000
@@ -151,26 +151,25 @@ def swatch_bounds(w, h):
     return w_color, w_rgb, h_rgb
 
 
-def init(*, serial_init: Serial = None, cups_init: CupsConnection = None,
-         frame_init: tk.Frame = None):
+def init(*, init_serial: Serial = None, init_cups: CupsConnection = None,
+         init_frame: tk.Frame = None):
     """Initialize connections to serial device and CUPS server, and create a
     canvas in which colors will be displayed.
     """
     global serial
-    if (serial := serial_init) is None:
+    if (serial := init_serial) is None:
         serial = Serial(baudrate=SERIAL_BAUD_RATE)
     serial_connect()
 
     global cups
-    if (cups := cups_init) is None:
+    if (cups := init_cups) is None:
         cups = CupsConnection()
 
     global frame
-    if (frame := frame_init) is None:
+    if (frame := init_frame) is None:
         frame = tk.Tk()
-        frame.title('bojata')
-        frame.geometry('{}x{}'.format(frame.winfo_screenwidth(),
-                                      frame.winfo_screenheight()))
+        frame.title('Bojata')
+        frame.geometry(f'{frame.winfo_screenwidth()}x{frame.winfo_screenheight()}')
         frame.attributes('-fullscreen', True)
         frame.protocol('WM_DELETE_WINDOW', exit)
         frame.update()
