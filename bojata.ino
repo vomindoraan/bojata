@@ -14,18 +14,29 @@
 #define SENSOR_S3  6
 #define SENSOR_OUT 7
 
+// Galerija Reflektor, Užice
 // #define R_MIN 600
 // #define R_MAX 80
 // #define G_MIN 750
 // #define G_MAX 80
 // #define B_MIN 600
 // #define B_MAX 80
-#define R_MIN 3000
-#define R_MAX 1200
-#define G_MIN 4000
-#define G_MAX 1200
-#define B_MIN 3000
-#define B_MAX 1200
+
+// Kulturni distrikt, Novi Sad
+// #define R_MIN 3000
+// #define R_MAX 1200
+// #define G_MIN 4000
+// #define G_MAX 1200
+// #define B_MIN 3000
+// #define B_MAX 1200
+
+// Mercator Hipermarket, Novi Sad
+#define R_MIN 5000
+#define R_MAX 1000
+#define G_MIN 6000
+#define G_MAX 1500
+#define B_MIN 5000
+#define B_MAX 1000
 
 // TFT_ILI9163C constants
 #define TFT_A0 9
