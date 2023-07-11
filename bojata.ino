@@ -31,6 +31,14 @@
 // #define B_MAX 1200
 
 // Mercator Hipermarket, Novi Sad
+// #define R_MIN 5000
+// #define R_MAX 1000
+// #define G_MIN 6000
+// #define G_MAX 1500
+// #define B_MIN 5000
+// #define B_MAX 1000
+
+// Atelje 61, Novi Sad
 #define R_MIN 5000
 #define R_MAX 1000
 #define G_MIN 6000

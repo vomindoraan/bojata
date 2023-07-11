@@ -17,7 +17,7 @@ FONT_NAME = 'TkDefaultFont'
 PRINT_FONT_NAME = '/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf'
 PRINT_FONT = ImageFont.truetype(PRINT_FONT_NAME, 24)
 PRINT_FONT_LARGE = ImageFont.truetype(PRINT_FONT_NAME, 96)
-PRINT_ENABLE = True
+PRINT_ENABLE = False
 
 
 class BojataRoot(tk.Tk):

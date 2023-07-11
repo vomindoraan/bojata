@@ -17,7 +17,7 @@ logging.basicConfig(format='[%(levelname)s] %(asctime)s - %(message)s',
                     level=os.getenv('LOGLEVEL', 'INFO').upper())
 
 SERIAL_BAUD_RATE = 115200
-SERIAL_BUFFER_LIMIT = 12  # Around 1 whole RGB message (reached in ~4 mins of runtime on RPi 4)
+SERIAL_BUFFER_LIMIT = 14  # Around 1 whole RGB message (reached in ~4 mins of runtime on RPi 4)
 TASK_DELAY = 0
 RECONNECT_DELAY = 1000
 PRINT_DELAY = 10000
