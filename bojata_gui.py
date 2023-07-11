@@ -17,6 +17,7 @@ FONT_NAME = 'TkDefaultFont'
 PRINT_FONT_NAME = '/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf'
 PRINT_FONT = ImageFont.truetype(PRINT_FONT_NAME, 24)
 PRINT_FONT_LARGE = ImageFont.truetype(PRINT_FONT_NAME, 96)
+PRINT_ENABLE = True
 
 
 class BojataRoot(tk.Tk):
@@ -209,11 +210,13 @@ class ScanFrame(BojataFrame):
 
     def print_prompt(self):
         # TODO: Replace with a custom dialog window
-        answer = tk.messagebox.askyesno(
-            "Štampa",
-            "Boja sačuvana u bazu. Da li želite ištampati list potvrde?",
-        )
-        if answer:
+        if not PRINT_ENABLE:
+            tk.messagebox.showinfo(None, "Boja sačuvana u bazu.")
+            return
+
+        if tk.messagebox.askyesno(
+            None, "Boja sačuvana u bazu. Da li želite ištampati list potvrde?",
+        ):
             bojata.start_printing(self.scanned_color, self.generate_image())
 
     def generate_image(self):
@@ -310,6 +313,7 @@ if __name__ == '__main__':
             orig_cleanup()
     bojata.serial_buffer_cleanup = patched_cleanup
 
-    bojata.init(init_frame=home_frame.color_frame)
+    init_cups = PRINT_ENABLE and None
+    bojata.init(init_frame=home_frame.color_frame, init_cups=init_cups)
     bojata_db.init()
     root.mainloop()
