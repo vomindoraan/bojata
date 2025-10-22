@@ -203,6 +203,7 @@ class ScanFrame(BojataFrame):
         bojata_db.persist(color)
 
         self.print_prompt()
+
         self.root.show_frame('HomeFrame')
 
     def cancel(self):

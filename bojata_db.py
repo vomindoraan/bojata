@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 
 DRAWER_COUNT = 10
-DEFAULT_LOCATION = "Mercator Hipermarket, Novi Sad"
+DEFAULT_LOCATION = "Atelje 61, Novi Sad"
 
 Base = declarative_base()
 engine = None
