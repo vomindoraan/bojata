@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import textwrap
 import tkinter as tk
 import tkinter.messagebox
@@ -17,7 +18,7 @@ FONT_NAME = 'TkDefaultFont'
 PRINT_FONT_NAME = '/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf'
 PRINT_FONT = ImageFont.truetype(PRINT_FONT_NAME, 24)
 PRINT_FONT_LARGE = ImageFont.truetype(PRINT_FONT_NAME, 96)
-PRINT_ENABLE = False
+PRINT_ENABLED = bool(os.getenv('PRINT_ENABLED', '0').lower() in {'1', 'y', 'yes', 'true'})
 
 
 class BojataRoot(tk.Tk):
@@ -151,8 +152,7 @@ class ScanFrame(BojataFrame):
                         pady=self.root.halfpad)
 
         f = 'drawer'
-        # self.il[f] = tk.Label(frame2, text="BROJ KASETE")
-        self.il[f] = tk.Label(frame2, text="SKENIRANI ARTIKAL")
+        self.il[f] = tk.Label(frame2, text="SKENIRANI PREDMET / BROJ KASETE")
         self.il[f].grid(row=6, column=0, columnspan=2, sticky='nw')
         self.iv[f] = tk.StringVar(self)
         # drawers = range(1, bojata_db.DRAWER_COUNT+1)
@@ -211,7 +211,7 @@ class ScanFrame(BojataFrame):
 
     def print_prompt(self):
         # TODO: Replace with a custom dialog window
-        if not PRINT_ENABLE:
+        if not PRINT_ENABLED:
             tk.messagebox.showinfo(None, "Boja sačuvana u bazu.")
             return
 
@@ -221,7 +221,7 @@ class ScanFrame(BojataFrame):
             bojata.start_printing(self.scanned_color, self.generate_image())
 
     def generate_image(self):
-        with Image.open('template_rev0.6.png') as img:
+        with Image.open('template_rev0.7.png') as img:
             img.resize((874, 1240))  # A5 @ 150 PPI
             draw = ImageDraw.Draw(img)
 
@@ -266,8 +266,7 @@ class TableFrame(BojataFrame):
         'author':   "Autor",
         'name':     "Naziv boje",
         'category': "Kategorija boje",
-        # 'drawer':   "Broj kasete",
-        'drawer':   "Skenirani artikal",
+        'drawer':   "Skenirani predmet / Broj kasete",
         'comment':  "Komentar",
         'location': "Mesto",
         'datetime': "Vreme",
@@ -314,7 +313,7 @@ if __name__ == '__main__':
             orig_cleanup()
     bojata.serial_buffer_cleanup = patched_cleanup
 
-    init_cups = PRINT_ENABLE and None
+    init_cups = PRINT_ENABLED and None
     bojata.init(init_frame=home_frame.color_frame, init_cups=init_cups)
     bojata_db.init()
     root.mainloop()

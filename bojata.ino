@@ -1,11 +1,33 @@
+// Nano 33 BLE
+#include <mbed_chrono.h>
 #include <platform/Callback.h>
 #include <rtos.h>
-#include <TFT_ILI9163C.h>
 
-#define BAUD_RATE  115200
+using namespace std::literals::chrono_literals;
 
-#define PRINT_PIN  8
-#define PRINT_FLAG "@"
+#ifndef DEBUG
+#   define DEBUG 0
+#endif
+
+#ifndef TFT_ENABLED
+#   define TFT_ENABLED 0
+#endif
+#if TFT_ENABLED
+#   include <TFT_ILI9163C.h>
+#endif
+
+#ifndef PRINT_ENABLED
+#   define PRINT_ENABLED 0
+#endif
+#if PRINT_ENABLED
+#   define PRINT_PIN  8
+#   define PRINT_FLAG "@"
+#endif
+
+#define BAUD_RATE   115200UL
+#define MAIN_DELAY  300ms
+#define TFT_DELAY   0ms
+#define PRINT_DELAY 1ms
 
 // TCS230 constants
 #define SENSOR_S0  3
@@ -46,43 +68,42 @@
 #define B_MIN 5000
 #define B_MAX 1000
 
+#if TFT_ENABLED
 // TFT_ILI9163C constants
-#define TFT_A0 9
-#define TFT_CS 10
+#   define TFT_A0 9
+#   define TFT_CS 10
 
-#define BLACK 0x0000
-#define BLUE  0x001F
-#define RED   0xF800
-#define GREEN 0x07E0
-#define WHITE 0xFFFF
+#   define TFT_BLACK 0x0000
+#   define TFT_BLUE  0x001F
+#   define TFT_RED   0xF800
+#   define TFT_GREEN 0x07E0
+#   define TFT_WHITE 0xFFFF
 
 inline uint16_t toRgb565(uint8_t r8, uint8_t g8, uint8_t b8) {
     return ((r8 & 0xF8) << 8) | ((g8 & 0xFC) << 3) | ((b8 & 0xF8) >> 3);
 }
 
-#define TFT_DELAY   0
-#define PRINT_DELAY 1
-#define MAIN_DELAY  300
-
 TFT_ILI9163C tft = TFT_ILI9163C(TFT_CS, TFT_A0);
 
 rtos::Thread tftThread;
 rtos::Semaphore tftSem(0, 1);
-uint16_t tftRgb565;
-
-rtos::Thread printThread;
-rtos::Mutex printMutex;
-bool printPressed;
+uint16_t tftColor;
 
 void paintScreen() {
     while (true) {
         // Paint TFT screen with 16-bit RGB565 value
         tftSem.acquire();
-        tft.fillRect(0, 0, 128, 112, tftRgb565);
+        tft.fillRect(0, 0, 128, 112, tftColor);
 
         rtos::ThisThread::sleep_for(TFT_DELAY);
     }
 }
+#endif
+
+#if PRINT_ENABLED
+rtos::Thread printThread;
+rtos::Mutex printMutex;
+bool printPressed;
 
 void checkPrint() {
     static bool oldPrintState = HIGH;
@@ -101,10 +122,9 @@ void checkPrint() {
         rtos::ThisThread::sleep_for(PRINT_DELAY);
     }
 }
+#endif
 
 void setup() {
-    pinMode(PRINT_PIN, INPUT_PULLUP);
-
     pinMode(SENSOR_S0, OUTPUT);
     pinMode(SENSOR_S1, OUTPUT);
     pinMode(SENSOR_S2, OUTPUT);
@@ -117,58 +137,77 @@ void setup() {
 
     Serial.begin(BAUD_RATE);
 
+#if TFT_ENABLED
     tft.begin();
-    tft.fillRect(86, 112, 43, 16, BLUE);
-    tft.fillRect(43, 112, 43, 16, GREEN);
-    tft.fillRect(0,  112, 43, 16, RED);
+    tft.fillRect(86, 112, 43, 16, TFT_BLUE);
+    tft.fillRect(43, 112, 43, 16, TFT_GREEN);
+    tft.fillRect(0,  112, 43, 16, TFT_RED);
 
     // Paint TFT screen in a thread
     tftThread.start(mbed::callback(paintScreen));
+#endif
+
+#if PRINT_ENABLED
+    pinMode(PRINT_PIN, INPUT_PULLUP);
 
     // Update print button state in a thread
     printThread.start(mbed::callback(checkPrint));
+#endif
 }
 
 void loop() {
     int freq;
-    uint8_t r8, g8, b8, r5, g6, b5;
+    uint8_t r8, g8, b8;
+#if TFT_ENABLED
+    uint8_t r5, g6, b5;
+#endif
 
     // Set red filtered photodiodes to be read
     digitalWrite(SENSOR_S2, LOW);
     digitalWrite(SENSOR_S3, LOW);
     // Read output frequency
     freq = pulseIn(SENSOR_OUT, LOW);
-//    Serial.print(freq);
-//    Serial.print(" ");
+#if DEBUG
+    Serial.print(freq); Serial.print(" ");
+#endif
     // Remap frequency to RGB888 and RGB565 ranges
     r8 = constrain(map(freq, R_MIN, R_MAX, 0, 255), 0, 255);
+#if TFT_ENABLED
     r5 = constrain(map(freq, R_MIN, R_MAX, 0,  31), 0,  31);
+#endif
 
     // Set green filtered photodiodes to be read
     digitalWrite(SENSOR_S2, HIGH);
     digitalWrite(SENSOR_S3, HIGH);
     // Read output frequency
     freq = pulseIn(SENSOR_OUT, LOW);
-//    Serial.print(freq);
-//    Serial.print(" ");
+#if DEBUG
+    Serial.print(freq); Serial.print(" ");
+#endif
     // Remap frequency to RGB888 and RGB565 ranges
     g8 = constrain(map(freq, G_MIN, G_MAX, 0, 255), 0, 255);
+#if TFT_ENABLED
     g6 = constrain(map(freq, G_MIN, G_MAX, 0,  63), 0,  63);
+#endif
 
     // Set blue filtered photodiodes to be read
     digitalWrite(SENSOR_S2, LOW);
     digitalWrite(SENSOR_S3, HIGH);
     // Read output frequency
     freq = pulseIn(SENSOR_OUT, LOW);
-//    Serial.print(freq);
-//    Serial.println(" ");
+#if DEBUG
+    Serial.print(freq); Serial.println(" ");
+#endif
     // Remap frequency to RGB888 and RGB565 ranges
     b8 = constrain(map(freq, B_MIN, B_MAX, 0, 255), 0, 255);
+#if TFT_ENABLED
     b5 = constrain(map(freq, B_MIN, B_MAX, 0,  31), 0,  31);
+#endif
 
     // Format 24-bit RGB888 value as string
     char rgb888[13];
     snprintf(rgb888, 12, "%d,%d,%d", r8, g8, b8);
+#if PRINT_ENABLED
     // If print button was pressed, append print flag
     if (printPressed) {
         printMutex.lock();
@@ -176,13 +215,18 @@ void loop() {
         printMutex.unlock();
         strcat(rgb888, PRINT_FLAG);
     }
-    // Send RGB888 value and (potentially) print flag over serial
+#endif
+    // Send RGB888 value (and potentially print flag) over serial
     Serial.println(rgb888);
 
+#if TFT_ENABLED
     // Set RGB565 value used to paint the TFT screen
-    tftRgb565 = (r5 << 11) | (g6 << 5) | b5;
-//    Serial.println(rgb565, HEX);
+    tftColor = (r5 << 11) | (g6 << 5) | b5;
+#   if DEBUG
+    Serial.println(tftColor, HEX);
+#   endif
     tftSem.release();
+#endif
 
     rtos::ThisThread::sleep_for(MAIN_DELAY);
     Serial.flush();
