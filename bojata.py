@@ -22,7 +22,7 @@ TASK_DELAY = 0
 RECONNECT_DELAY = 1000
 PRINT_DELAY = 10000
 
-PRINT_FILENAME = 'print.png'
+PRINT_FILENAME = 'print/print.png'
 PRINT_FONT = ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf', 96)
 PRINT_FLAG = '@'
 RGB_PATTERN = re.compile(fr'(\d+),(\d+),(\d+)(?:;(\d+))?({PRINT_FLAG})?\r?\n')  # R,G,B[;I]["@"]

@@ -18,6 +18,7 @@ FONT_NAME = 'TkDefaultFont'
 PRINT_FONT_NAME = '/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf'
 PRINT_FONT = ImageFont.truetype(PRINT_FONT_NAME, 24)
 PRINT_FONT_LARGE = ImageFont.truetype(PRINT_FONT_NAME, 96)
+PRINT_TEMPLATE = 'print/template_rev0.7.png'
 PRINT_ENABLED = bool(os.getenv('PRINT_ENABLED', '0').lower() in {'1', 'y', 'yes', 'true'})
 
 
@@ -221,7 +222,7 @@ class ScanFrame(BojataFrame):
             bojata.start_printing(self.scanned_color, self.generate_image())
 
     def generate_image(self):
-        with Image.open('template_rev0.7.png') as img:
+        with Image.open(PRINT_TEMPLATE) as img:
             img.resize((874, 1240))  # A5 @ 150 PPI
             draw = ImageDraw.Draw(img)
 

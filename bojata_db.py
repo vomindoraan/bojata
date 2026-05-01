@@ -51,7 +51,7 @@ class Color(Base):
 
 def init():
     global engine
-    engine = create_engine('sqlite:///bojata.db', echo=True)
+    engine = create_engine('sqlite:///data/bojata.db', echo=True)
     Base.metadata.create_all(engine)
 
 
