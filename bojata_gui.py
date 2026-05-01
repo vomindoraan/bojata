@@ -14,12 +14,12 @@ import bojata
 import bojata_db
 
 
-FONT_NAME = 'TkDefaultFont'
-PRINT_FONT_NAME = '/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf'
-PRINT_FONT = ImageFont.truetype(PRINT_FONT_NAME, 24)
-PRINT_FONT_LARGE = ImageFont.truetype(PRINT_FONT_NAME, 96)
+UI_FONT_NAME = 'TkDefaultFont'
 PRINT_TEMPLATE = 'print/template_rev0.7.png'
 PRINT_ENABLED = bool(os.getenv('PRINT_ENABLED', '0').lower() in {'1', 'y', 'yes', 'true'})
+
+DEFAULT_LOCATION = "Atelje 61, Novi Sad"
+DRAWER_COUNT = 10
 
 
 class BojataRoot(tk.Tk):
@@ -35,10 +35,10 @@ class BojataRoot(tk.Tk):
         self.pad = self.winfo_width() // 100
         self.halfpad = (0, self.pad)
 
-        tk.font.nametofont(FONT_NAME).configure(size=18)
-        self.font = (FONT_NAME, 18)
-        self.font_medium = (FONT_NAME, 24)
-        self.font_large = (FONT_NAME, 36)
+        tk.font.nametofont(UI_FONT_NAME).configure(size=18)
+        self.font = (UI_FONT_NAME, 18)
+        self.font_medium = (UI_FONT_NAME, 24)
+        self.font_large = (UI_FONT_NAME, 36)
 
         container = tk.Frame(self)
         container.pack(fill=tk.BOTH, expand=True)
@@ -156,7 +156,7 @@ class ScanFrame(BojataFrame):
         self.il[f] = tk.Label(frame2, text="SKENIRANI PREDMET / BROJ KASETE")
         self.il[f].grid(row=6, column=0, columnspan=2, sticky='nw')
         self.iv[f] = tk.StringVar(self)
-        # objects = range(1, bojata_db.DRAWER_COUNT+1)
+        # objects = range(1, DRAWER_COUNT+1)
         # self.ie[f] = tk.OptionMenu(frame2, self.iv[f], "", *objects)
         self.ie[f] = tk.Entry(frame2, textvariable=self.iv[f], font=self.root.font)
         self.ie[f].grid(row=7, column=0, columnspan=2, sticky='we',
@@ -173,7 +173,7 @@ class ScanFrame(BojataFrame):
         f = 'location'
         self.il[f] = tk.Label(frame2, text="LOKACIJA")
         self.il[f].grid(row=10, column=0, columnspan=2, sticky='nw')
-        self.iv[f] = tk.StringVar(self, bojata_db.DEFAULT_LOCATION)
+        self.iv[f] = tk.StringVar(self, DEFAULT_LOCATION)
         self.ie[f] = tk.Entry(frame2, textvariable=self.iv[f], font=self.root.font)
         self.ie[f].grid(row=11, column=0, columnspan=2, sticky='we',
                         pady=self.root.halfpad)
@@ -217,7 +217,7 @@ class ScanFrame(BojataFrame):
             return
 
         if tk.messagebox.askyesno(
-            None, "Boja sačuvana u bazu. Da li želite ištampati list potvrde?",
+            None, "Boja sačuvana u bazu. Da li želite ištampati priznanicu?",
         ):
             bojata.start_printing(self.scanned_color, self.generate_image())
 
@@ -228,35 +228,35 @@ class ScanFrame(BojataFrame):
 
             bojata.draw_swatch(draw, self.scanned_color, x=80, y=56, w=256, h=168)
             text = textwrap.fill(self.scanned_color, width=50, max_lines=1)
-            draw.text((432, 96), text, font=PRINT_FONT_LARGE, fill=self.scanned_color)
+            draw.text((432, 96), text, font=bojata.PRINT_FONT_LARGE, fill=self.scanned_color)
 
             value = self.iv['author'].get()
             text = textwrap.fill(value, width=50, max_lines=1)
-            draw.text((96, 308), text, font=PRINT_FONT, fill='black')
+            draw.text((96, 308), text, font=bojata.PRINT_FONT, fill='black')
 
             value = self.iv['name'].get()
             text = textwrap.fill(value, width=50, max_lines=1)
-            draw.text((96, 436), text, font=PRINT_FONT, fill='black')
+            draw.text((96, 436), text, font=bojata.PRINT_FONT, fill='black')
 
             value = self.iv['category'].get()
             text = textwrap.fill(value, width=50, max_lines=1)
-            draw.text((96, 566), text, font=PRINT_FONT, fill='black')
+            draw.text((96, 566), text, font=bojata.PRINT_FONT, fill='black')
 
             value = self.iv['object'].get()
             text = textwrap.fill(value, width=50, max_lines=1)
-            draw.text((96, 692), text, font=PRINT_FONT, fill='black')
+            draw.text((96, 692), text, font=bojata.PRINT_FONT, fill='black')
 
             value = self.iv['comment'].get()
             text = textwrap.fill(value, width=50, max_lines=5)
-            draw.text((96, 820), text, font=PRINT_FONT, fill='black')
+            draw.text((96, 820), text, font=bojata.PRINT_FONT, fill='black')
 
             value = self.iv['location'].get()
             text = textwrap.fill(value, width=24, max_lines=3)
-            draw.text((96, 1076), text, font=PRINT_FONT, fill='black')
+            draw.text((96, 1076), text, font=bojata.PRINT_FONT, fill='black')
 
             value = self.iv['datetime'].get()
             text = textwrap.fill(value, width=24, max_lines=3)
-            draw.text((472, 1076), text, font=PRINT_FONT, fill='black')
+            draw.text((472, 1076), text, font=bojata.PRINT_FONT, fill='black')
 
             return img
 

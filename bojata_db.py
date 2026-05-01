@@ -6,9 +6,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
 
 
-DEFAULT_LOCATION = "Atelje 61, Novi Sad"
-DRAWER_COUNT = 10
-
 Base = declarative_base()
 engine = None
 

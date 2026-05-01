@@ -22,11 +22,14 @@ TASK_DELAY = 0
 RECONNECT_DELAY = 1000
 PRINT_DELAY = 10000
 
-PRINT_FILENAME = 'print/print.png'
-PRINT_FONT = ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf', 96)
 PRINT_FLAG = '@'
 RGB_PATTERN = re.compile(fr'(\d+),(\d+),(\d+)(?:;(\d+))?({PRINT_FLAG})?\r?\n')  # R,G,B[;I]["@"]
 COMPORT_PATTERN = re.compile(r'/dev/ttyACM\d+|COM\d+')
+
+PRINT_FONT_NAME = '/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf'
+PRINT_FONT = ImageFont.truetype(PRINT_FONT_NAME, 24)
+PRINT_FONT_LARGE = ImageFont.truetype(PRINT_FONT_NAME, 96)
+PRINT_FILENAME = 'print/print.png'
 
 SWATCH_COLORS = ('#ff0000', '#00ff00', '#0000ff')
 
@@ -127,7 +130,7 @@ def start_printing(color, img=None):
         img = Image.new(mode='RGB', size=(874, 1240), color='white')  # A5 @ 150 PPI
         draw = ImageDraw.Draw(img)
         draw_swatch(draw, color, x=80, y=56, w=256, h=168)
-        draw.text((432, 96), text=color, font=PRINT_FONT, fill=color)
+        draw.text((432, 96), text=color, font=PRINT_FONT_LARGE, fill=color)
     img.save(PRINT_FILENAME, 'PNG')
 
     logging.info("Starting printing for %s...", color)

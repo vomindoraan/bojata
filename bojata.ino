@@ -19,64 +19,41 @@ using namespace std::literals::chrono_literals;
 #ifndef PRINT_ENABLED
 #   define PRINT_ENABLED 0
 #endif
-#if PRINT_ENABLED
-#   define PRINT_PIN  8
-#   define PRINT_FLAG "@"
-#endif
 
 #define BAUD_RATE   115200UL
 #define MAIN_DELAY  300ms
 #define TFT_DELAY   0ms
 #define PRINT_DELAY 1ms
 
-// TCS230 constants
+#if PRINT_ENABLED
+#   define PRINT_FLAG "@"
+#   define PRINT_PIN  8
+#endif
+
+// TCS230 color sensor pins
 #define SENSOR_S0  3
 #define SENSOR_S1  4
 #define SENSOR_S2  5
 #define SENSOR_S3  6
 #define SENSOR_OUT 7
 
-// Galerija Reflektor, Užice
-// #define R_MIN 600
-// #define R_MAX 80
-// #define G_MIN 750
-// #define G_MAX 80
-// #define B_MIN 600
-// #define B_MAX 80
-
-// Kulturni distrikt, Novi Sad
-// #define R_MIN 3000
-// #define R_MAX 1200
-// #define G_MIN 4000
-// #define G_MAX 1200
-// #define B_MIN 3000
-// #define B_MAX 1200
-
-// Mercator Hipermarket, Novi Sad
-// #define R_MIN 5000
-// #define R_MAX 1000
-// #define G_MIN 6000
-// #define G_MAX 1500
-// #define B_MIN 5000
-// #define B_MAX 1000
-
-// Atelje 61, Novi Sad
-#define R_MIN 5000
-#define R_MAX 1000
-#define G_MIN 6000
-#define G_MAX 1500
-#define B_MIN 5000
-#define B_MAX 1000
+// Sensor frequency bounds
+#define R_MIN 5000  //  600  3000  5000
+#define R_MAX 1000  //   80  1200  1000
+#define G_MIN 6000  //  750  4000  6000
+#define G_MAX 1500  //   80  1200  1500
+#define B_MIN 5000  //  600  3000  5000
+#define B_MAX 1000  //   80  1200  1000
 
 #if TFT_ENABLED
-// TFT_ILI9163C constants
+// TFT_ILI9163C screen pins (+ SCLK, MOSI)
 #   define TFT_A0 9
 #   define TFT_CS 10
 
 #   define TFT_BLACK 0x0000
 #   define TFT_BLUE  0x001F
-#   define TFT_RED   0xF800
 #   define TFT_GREEN 0x07E0
+#   define TFT_RED   0xF800
 #   define TFT_WHITE 0xFFFF
 
 inline uint16_t toRgb565(uint8_t r8, uint8_t g8, uint8_t b8) {
