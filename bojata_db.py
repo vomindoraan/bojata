@@ -6,8 +6,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
 
 
-DRAWER_COUNT = 10
 DEFAULT_LOCATION = "Atelje 61, Novi Sad"
+DRAWER_COUNT = 10
 
 Base = declarative_base()
 engine = None
@@ -35,7 +35,7 @@ class Color(Base):
     hex = Column(String(7), nullable=False)
     name = Column(String(50))
     category = Column(Enum(ColorCategory))
-    drawer = Column(String(50))
+    object = Column(String(50))
     comment = Column(String(250))
     location = Column(String(72))
     datetime = Column(String(20), nullable=False)

@@ -152,12 +152,12 @@ class ScanFrame(BojataFrame):
         self.ie[f].grid(row=5, column=0, columnspan=2, sticky='we',
                         pady=self.root.halfpad)
 
-        f = 'drawer'
+        f = 'object'
         self.il[f] = tk.Label(frame2, text="SKENIRANI PREDMET / BROJ KASETE")
         self.il[f].grid(row=6, column=0, columnspan=2, sticky='nw')
         self.iv[f] = tk.StringVar(self)
-        # drawers = range(1, bojata_db.DRAWER_COUNT+1)
-        # self.ie[f] = tk.OptionMenu(frame2, self.iv[f], "", *drawers)
+        # objects = range(1, bojata_db.DRAWER_COUNT+1)
+        # self.ie[f] = tk.OptionMenu(frame2, self.iv[f], "", *objects)
         self.ie[f] = tk.Entry(frame2, textvariable=self.iv[f], font=self.root.font)
         self.ie[f].grid(row=7, column=0, columnspan=2, sticky='we',
                         pady=self.root.halfpad)
@@ -242,7 +242,7 @@ class ScanFrame(BojataFrame):
             text = textwrap.fill(value, width=50, max_lines=1)
             draw.text((96, 566), text, font=PRINT_FONT, fill='black')
 
-            value = self.iv['drawer'].get()
+            value = self.iv['object'].get()
             text = textwrap.fill(value, width=50, max_lines=1)
             draw.text((96, 692), text, font=PRINT_FONT, fill='black')
 
@@ -267,7 +267,7 @@ class TableFrame(BojataFrame):
         'author':   "Autor",
         'name':     "Naziv boje",
         'category': "Kategorija boje",
-        'drawer':   "Skenirani predmet / Broj kasete",
+        'object':   "Skenirani predmet / Broj kasete",
         'comment':  "Komentar",
         'location': "Mesto",
         'datetime': "Vreme",
