@@ -59,7 +59,7 @@ def serial_connect():
 def serial_buffer_cleanup():
     logging.info("Discarding %d buffered bytes", serial.in_waiting)
     serial.reset_input_buffer()
-    os.execv(sys.executable, ['python'] + sys.argv)  # HACK
+    # os.execv(sys.executable, ['python'] + sys.argv)  # HACK
 
 
 def task():
