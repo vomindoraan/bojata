@@ -5,7 +5,6 @@ import re
 import sys
 import tkinter as tk
 import tkinter.font
-from typing import Union
 
 from PIL import Image, ImageDraw, ImageFont
 from cups import Connection as CupsConnection
@@ -26,6 +25,7 @@ PRINT_FLAG = '@'
 RGB_PATTERN = re.compile(fr'(\d+),(\d+),(\d+)(?:;(\d+))?({PRINT_FLAG})?\r?\n')  # R,G,B[;I]["@"]
 COMPORT_PATTERN = re.compile(r'/dev/ttyACM\d+|COM\d+')
 
+PRINT_ENABLED = bool(os.getenv('PRINT_ENABLED', '1').lower() in {'1', 'y', 'yes', 'true'})
 PRINT_FONT_NAME = '/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf'
 PRINT_FONT = ImageFont.truetype(PRINT_FONT_NAME, 24)
 PRINT_FONT_LARGE = ImageFont.truetype(PRINT_FONT_NAME, 96)
@@ -35,8 +35,8 @@ SWATCH_COLORS = ('#ff0000', '#00ff00', '#0000ff')
 
 # Globals
 serial:     Serial
-cups:       CupsConnection
-frame:      Union[tk.Frame, tk.Tk]
+cups:       CupsConnection | None
+frame:      tk.Frame | tk.Tk
 canvas:     tk.Canvas
 curr_color: str
 
@@ -96,8 +96,8 @@ def task():
             frame.update()
 
             # If print flag is present, start printing the color
-            if pf is not None:
-                assert pf == PRINT_FLAG
+            if pf is not None and PRINT_ENABLED:
+                assert pf == PRINT_FLAG and cups is not None
                 create_outlined_text(canvas.draw_x/2, canvas.draw_y/2,
                                      text=f"Printing...\n{curr_color}")
                 frame.update()
@@ -166,7 +166,8 @@ def init(*, init_serial: Serial = None, init_cups: CupsConnection = None,
 
     global cups
     if (cups := init_cups) is None:
-        cups = CupsConnection()
+        if PRINT_ENABLED:
+            cups = CupsConnection()
 
     global frame
     if (frame := init_frame) is None:

@@ -16,7 +16,6 @@ import bojata_db
 
 UI_FONT_NAME = 'TkDefaultFont'
 PRINT_TEMPLATE = 'print/template_rev0.7.png'
-PRINT_ENABLED = bool(os.getenv('PRINT_ENABLED', '0').lower() in {'1', 'y', 'yes', 'true'})
 
 DEFAULT_LOCATION = "Atelje 61, Novi Sad"
 DRAWER_COUNT = 10
@@ -80,12 +79,12 @@ class HomeFrame(BojataFrame):
 
         tk.Button(self, text="OČITAJ\nBOJU", font=self.root.font_medium,
                   padx=self.root.pad*4, pady=self.root.pad*2,
-                  command=partial(root.show_frame, 'ScanFrame'))\
+                  command=partial(root.show_frame, 'ScanFrame')) \
             .pack(side=tk.TOP, expand=True, padx=self.root.halfpad)
 
         tk.Button(self, text="BAZA\nBOJA", font=self.root.font_medium,
                   padx=self.root.pad*4, pady=self.root.pad*2,
-                  command=partial(root.show_frame, 'TableFrame'))\
+                  command=partial(root.show_frame, 'TableFrame')) \
             .pack(side=tk.TOP, expand=True, padx=self.root.halfpad)
 
 
@@ -182,10 +181,10 @@ class ScanFrame(BojataFrame):
         self.iv[f] = tk.StringVar(self, datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
         tk.Button(frame2, text="✔", fg='green', font=self.root.font_medium,
-                  command=self.submit)\
+                  command=self.submit) \
             .grid(row=12, column=0, sticky='we', ipady=self.root.pad)
         tk.Button(frame2, text="❌", fg='red', font=self.root.font_medium,
-                  command=self.cancel)\
+                  command=self.cancel) \
             .grid(row=12, column=1, sticky='we', ipady=self.root.pad)
 
     def submit(self):
@@ -212,7 +211,7 @@ class ScanFrame(BojataFrame):
 
     def print_prompt(self):
         # TODO: Replace with a custom dialog window
-        if not PRINT_ENABLED:
+        if not bojata.PRINT_ENABLED:
             tk.messagebox.showinfo(None, "Boja sačuvana u bazu.")
             return
 
@@ -275,7 +274,7 @@ class TableFrame(BojataFrame):
 
         tk.Button(self, text="NAZAD", font=self.root.font_medium,
                   padx=self.root.pad*2, pady=self.root.pad,
-                  command=partial(root.show_frame, 'HomeFrame'))\
+                  command=partial(root.show_frame, 'HomeFrame')) \
             .pack(side=tk.TOP, pady=self.root.halfpad)
 
     def on_show_frame(self, event):
@@ -303,7 +302,6 @@ if __name__ == '__main__':
             orig_cleanup()
     bojata.serial_buffer_cleanup = patched_cleanup
 
-    init_cups = PRINT_ENABLED and None
-    bojata.init(init_frame=home_frame.color_frame, init_cups=init_cups)
+    bojata.init(init_frame=home_frame.color_frame)
     bojata_db.init()
     root.mainloop()
