@@ -1,6 +1,6 @@
-pandas==1.1.5
-pandastable==0.13.0
-Pillow==9.2.0
-pycups==2.0.1
+pandas[excel]~=2.0
+pandastable~=0.14
+pillow~=12.2
+pycups~=2.0
 pyserial==3.5
-SQLAlchemy==1.4.40
+SQLAlchemy~=2.0
