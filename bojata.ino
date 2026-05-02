@@ -9,15 +9,15 @@ using namespace std::literals::chrono_literals;
 #   define DEBUG 0
 #endif
 
-#ifndef TFT_ENABLED
-#   define TFT_ENABLED 0
+#ifndef TFT_SCREEN
+#   define TFT_SCREEN 0
 #endif
-#if TFT_ENABLED
+#if TFT_SCREEN
 #   include <TFT_ILI9163C.h>
 #endif
 
-#ifndef PRINT_ENABLED
-#   define PRINT_ENABLED 0
+#ifndef PRINT_BUTTON
+#   define PRINT_BUTTON 0
 #endif
 
 #define BAUD_RATE   115200UL
@@ -25,7 +25,7 @@ using namespace std::literals::chrono_literals;
 #define TFT_DELAY   0ms
 #define PRINT_DELAY 1ms
 
-#if PRINT_ENABLED
+#if PRINT_BUTTON
 #   define PRINT_FLAG "@"
 #   define PRINT_PIN  8
 #endif
@@ -45,7 +45,7 @@ using namespace std::literals::chrono_literals;
 #define B_MIN 5000  //  600  3000  5000
 #define B_MAX 1000  //   80  1200  1000
 
-#if TFT_ENABLED
+#if TFT_SCREEN
 // TFT_ILI9163C screen pins (+ SCLK, MOSI)
 #   define TFT_A0 9
 #   define TFT_CS 10
@@ -77,7 +77,7 @@ void paintScreen() {
 }
 #endif
 
-#if PRINT_ENABLED
+#if PRINT_BUTTON
 rtos::Thread printThread;
 rtos::Mutex printMutex;
 bool printPressed;
@@ -114,7 +114,7 @@ void setup() {
 
     Serial.begin(BAUD_RATE);
 
-#if TFT_ENABLED
+#if TFT_SCREEN
     tft.begin();
     tft.fillRect(86, 112, 43, 16, TFT_BLUE);
     tft.fillRect(43, 112, 43, 16, TFT_GREEN);
@@ -124,7 +124,7 @@ void setup() {
     tftThread.start(mbed::callback(paintScreen));
 #endif
 
-#if PRINT_ENABLED
+#if PRINT_BUTTON
     pinMode(PRINT_PIN, INPUT_PULLUP);
 
     // Update print button state in a thread
@@ -135,7 +135,7 @@ void setup() {
 void loop() {
     int freq;
     uint8_t r8, g8, b8;
-#if TFT_ENABLED
+#if TFT_SCREEN
     uint8_t r5, g6, b5;
 #endif
 
@@ -149,7 +149,7 @@ void loop() {
 #endif
     // Remap frequency to RGB888 and RGB565 ranges
     r8 = constrain(map(freq, R_MIN, R_MAX, 0, 255), 0, 255);
-#if TFT_ENABLED
+#if TFT_SCREEN
     r5 = constrain(map(freq, R_MIN, R_MAX, 0,  31), 0,  31);
 #endif
 
@@ -163,7 +163,7 @@ void loop() {
 #endif
     // Remap frequency to RGB888 and RGB565 ranges
     g8 = constrain(map(freq, G_MIN, G_MAX, 0, 255), 0, 255);
-#if TFT_ENABLED
+#if TFT_SCREEN
     g6 = constrain(map(freq, G_MIN, G_MAX, 0,  63), 0,  63);
 #endif
 
@@ -177,14 +177,14 @@ void loop() {
 #endif
     // Remap frequency to RGB888 and RGB565 ranges
     b8 = constrain(map(freq, B_MIN, B_MAX, 0, 255), 0, 255);
-#if TFT_ENABLED
+#if TFT_SCREEN
     b5 = constrain(map(freq, B_MIN, B_MAX, 0,  31), 0,  31);
 #endif
 
     // Format 24-bit RGB888 value as string
     char rgb888[13];
     snprintf(rgb888, 12, "%d,%d,%d", r8, g8, b8);
-#if PRINT_ENABLED
+#if PRINT_BUTTON
     // If print button was pressed, append print flag
     if (printPressed) {
         printMutex.lock();
@@ -196,7 +196,7 @@ void loop() {
     // Send RGB888 value (and potentially print flag) over serial
     Serial.println(rgb888);
 
-#if TFT_ENABLED
+#if TFT_SCREEN
     // Set RGB565 value used to paint the TFT screen
     tftColor = (r5 << 11) | (g6 << 5) | b5;
 #   if DEBUG
