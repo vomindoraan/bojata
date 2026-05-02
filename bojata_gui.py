@@ -285,8 +285,9 @@ class TableFrame(BojataFrame):
         if not df.empty:
             self.table.setRowColors(rows=0, cols=[0], clr='white')
             for row in range(df.shape[0]):
-                color = df.at[row, "Boja"]
-                self.table.rowcolors["Boja"][row] = color
+                col = bojata_db.Color.label_of(bojata_db.Color.hex, annotated=False)
+                color = df.at[row, col]
+                self.table.rowcolors[col][row] = color
 
         self.table.redraw()
 

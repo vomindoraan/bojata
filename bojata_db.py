@@ -1,8 +1,8 @@
 import enum
 
 import pandas as pd
-from sqlalchemy import Enum, Integer, String, create_engine
-from sqlalchemy.orm import DeclarativeBase, Session, mapped_column
+from sqlalchemy import Column, Enum, Integer, String, create_engine
+from sqlalchemy.orm import DeclarativeBase, Session, Mapped
 
 
 DB_URL = 'sqlite:///data/bojata.db'
@@ -19,11 +19,12 @@ class LabelsMeta(type(Base)):
         super().__init__(name, bases, attrs)
         cls.__labels__ = {c.name: c.doc for c in cls.__table__.columns}
 
-    def label_of(cls, column, annotated=True):
-        label = cls.__labels__[column]
+    def label_of(cls, column: str | Column | Mapped, annotated=True):
+        col = getattr(column, 'name', column)
+        label = cls.__labels__[col]
         if annotated:
             label = label.upper()
-            if not cls.__table__.columns[column].nullable:
+            if not cls.__table__.columns[col].nullable:
                 label += " ⁽*⁾"
         return label
 
@@ -45,15 +46,15 @@ class ColorCategory(enum.Enum):
 class Color(Base, metaclass=LabelsMeta):
     __tablename__ = 'color'
 
-    id       = mapped_column(Integer,     primary_key=True, doc="ID")
-    author   = mapped_column(String(50),  nullable=False,   doc="Ime autora")
-    hex      = mapped_column(String(7),   nullable=False,   doc="Kôd boje")
-    name     = mapped_column(String(50),                    doc="Naziv boje")
-    category = mapped_column(Enum(ColorCategory),           doc="Kategorija boje")
-    object   = mapped_column(String(50),                    doc="Skenirani predmet / Broj kasete")
-    comment  = mapped_column(String(250),                   doc="Komentar")
-    location = mapped_column(String(72),                    doc="Mesto")
-    datetime = mapped_column(String(20),  nullable=False,   doc="Datum i vreme")
+    id       = Column(Integer,     primary_key=True, doc="ID")
+    author   = Column(String(50),  nullable=False,   doc="Ime autora")
+    hex      = Column(String(7),   nullable=False,   doc="Kôd boje")
+    name     = Column(String(50),                    doc="Naziv boje")
+    category = Column(Enum(ColorCategory),           doc="Kategorija boje")
+    object   = Column(String(50),                    doc="Skenirani predmet / Broj kasete")
+    comment  = Column(String(250),                   doc="Komentar")
+    location = Column(String(72),                    doc="Mesto")
+    datetime = Column(String(20),  nullable=False,   doc="Datum i vreme")
 
     @classmethod
     def read_data(cls, column_mapping=None):
