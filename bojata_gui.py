@@ -128,7 +128,7 @@ class ScanFrame(BojataFrame):
         frame2.columnconfigure(1, weight=1)
 
         f = 'author'
-        self.il[f] = tk.Label(frame2, text="IME AUTORA ⁽*⁾")
+        self.il[f] = tk.Label(frame2, text=bojata_db.Color.label_of(f))
         self.il[f].grid(row=0, column=0, columnspan=2, sticky='nw')
         self.iv[f] = tk.StringVar(self)
         self.ie[f] = tk.Entry(frame2, textvariable=self.iv[f], font=self.root.font)
@@ -136,7 +136,7 @@ class ScanFrame(BojataFrame):
                         pady=self.root.halfpad)
 
         f = 'name'
-        self.il[f] = tk.Label(frame2, text="NAZIV BOJE")
+        self.il[f] = tk.Label(frame2, text=bojata_db.Color.label_of(f))
         self.il[f].grid(row=2, column=0, columnspan=2, sticky='nw')
         self.iv[f] = tk.StringVar(self)
         self.ie[f] = tk.Entry(frame2, textvariable=self.iv[f], font=self.root.font)
@@ -144,7 +144,7 @@ class ScanFrame(BojataFrame):
                         pady=self.root.halfpad)
 
         f = 'category'
-        self.il[f] = tk.Label(frame2, text="KATEGORIJA BOJE")
+        self.il[f] = tk.Label(frame2, text=bojata_db.Color.label_of(f))
         self.il[f].grid(row=4, column=0, columnspan=2, sticky='nw')
         self.iv[f] = tk.StringVar(self)
         categories = [c.value for c in bojata_db.ColorCategory]
@@ -153,7 +153,7 @@ class ScanFrame(BojataFrame):
                         pady=self.root.halfpad)
 
         f = 'object'
-        self.il[f] = tk.Label(frame2, text="SKENIRANI PREDMET / BROJ KASETE")
+        self.il[f] = tk.Label(frame2, text=bojata_db.Color.label_of(f))
         self.il[f].grid(row=6, column=0, columnspan=2, sticky='nw')
         self.iv[f] = tk.StringVar(self)
         # objects = range(1, DRAWER_COUNT+1)
@@ -163,7 +163,7 @@ class ScanFrame(BojataFrame):
                         pady=self.root.halfpad)
 
         f = 'comment'
-        self.il[f] = tk.Label(frame2, text="KOMENTAR")
+        self.il[f] = tk.Label(frame2, text=bojata_db.Color.label_of(f))
         self.il[f].grid(row=8, column=0, columnspan=2, sticky='nw')
         self.iv[f] = tk.StringVar(self)
         self.ie[f] = tk.Entry(frame2, textvariable=self.iv[f], font=self.root.font)
@@ -171,7 +171,7 @@ class ScanFrame(BojataFrame):
                         pady=self.root.halfpad)
 
         f = 'location'
-        self.il[f] = tk.Label(frame2, text="LOKACIJA")
+        self.il[f] = tk.Label(frame2, text=bojata_db.Color.label_of(f))
         self.il[f].grid(row=10, column=0, columnspan=2, sticky='nw')
         self.iv[f] = tk.StringVar(self, DEFAULT_LOCATION)
         self.ie[f] = tk.Entry(frame2, textvariable=self.iv[f], font=self.root.font)
@@ -262,24 +262,13 @@ class ScanFrame(BojataFrame):
 
 
 class TableFrame(BojataFrame):
-    COLUMN_MAPPING = {
-        'hex':      "Boja",
-        'author':   "Autor",
-        'name':     "Naziv boje",
-        'category': "Kategorija boje",
-        'object':   "Skenirani predmet / Broj kasete",
-        'comment':  "Komentar",
-        'location': "Mesto",
-        'datetime': "Vreme",
-    }
-
     def __init__(self, parent, root):
         super().__init__(parent, root)
         frame = tk.Frame(self)
         frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True,
                    padx=self.root.pad, pady=self.root.pad)
 
-        df = pd.DataFrame(columns=self.COLUMN_MAPPING.values())
+        df = bojata_db.Color.empty_data()
         self.table = Table(frame, dataframe=df, maxcellwidth=200)
         self.table.drawSelectedRow = lambda: None  # Disable selected row highlighting
         self.table.show()
@@ -290,7 +279,7 @@ class TableFrame(BojataFrame):
             .pack(side=tk.TOP, pady=self.root.halfpad)
 
     def on_show_frame(self, event):
-        df = bojata_db.Color.read_data(self.COLUMN_MAPPING)
+        df = bojata_db.Color.read_data()
         self.table.updateModel(TableModel(df))
 
         # Color cells in hex column based on values

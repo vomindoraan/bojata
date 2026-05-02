@@ -37,13 +37,38 @@ class Color(Base):
     location = Column(String(72))
     datetime = Column(String(20), nullable=False)
 
+    COLUMN_LABELS = {
+        'author':   "Ime autora",
+        'hex':      "Kôd boje",
+        'name':     "Naziv boje",
+        'category': "Kategorija boje",
+        'object':   "Skenirani predmet / Broj kasete",
+        'comment':  "Komentar",
+        'location': "Mesto",
+        'datetime': "Datum i vreme",
+    }
+
     @classmethod
-    def read_data(cls, column_mapping):
+    def label_of(cls, column, annotated=True):
+        label = COLUMN_LABELS[column]
+        if annotated:
+            label = label.upper()
+            if not cls.__table__.columns[column].nullable:
+                label += " ⁽*⁾"
+        return label
+
+
+    @classmethod
+    def read_data(cls, column_mapping=cls.COLUMN_LABELS):
         columns = column_mapping.keys()
         df = pd.read_sql_table(cls.__tablename__, engine,
                                columns=columns, parse_dates=['datetime'])
         df.rename(columns=column_mapping, inplace=True)
         return df
+
+    @classmethod
+    def empty_data(cls, column_mapping=cls.COLUMN_LABELS):
+        return pd.DataFrame(columns=column_mapping.values())
 
 
 def init():
