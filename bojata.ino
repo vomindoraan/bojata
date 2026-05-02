@@ -182,8 +182,8 @@ void loop() {
 #endif
 
     // Format 24-bit RGB888 value as string
-    char rgb888[13];
-    snprintf(rgb888, 12, "%d,%d,%d", r8, g8, b8);
+    char rgb888[14];
+    snprintf(rgb888, sizeof(rgb888)-2, "%d,%d,%d", r8, g8, b8);
 #if PRINT_BUTTON
     // If print button was pressed, append print flag
     if (printPressed) {
