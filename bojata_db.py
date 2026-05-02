@@ -6,6 +6,7 @@ from sqlalchemy.orm import DeclarativeBase, Session, Mapped
 
 
 DB_URL = 'sqlite:///data/bojata.db'
+DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 engine = None
 

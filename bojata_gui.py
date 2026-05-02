@@ -178,14 +178,22 @@ class ScanFrame(BojataFrame):
                         pady=self.root.halfpad)
 
         f = 'datetime'
-        self.iv[f] = tk.StringVar(self, datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        self.il[f] = tk.Label(frame2, text=bojata_db.Color.label_of(f))
+        self.il[f].grid(row=12, column=0, columnspan=2, sticky='nw')
+        self.iv[f] = tk.StringVar(self, datetime.now().strftime(bojata_db.DATETIME_FORMAT))
+        self.ie[f] = tk.Entry(frame2, textvariable=self.iv[f], font=self.root.font)
+        self.ie[f].grid(row=13, column=0, columnspan=2, sticky='we',
+                        pady=self.root.halfpad)
+        self.ie[f].bind('<Key>', lambda e: 'break')  # Read-only
 
         tk.Button(frame2, text="✔", fg='green', font=self.root.font_medium,
                   command=self.submit) \
-            .grid(row=12, column=0, sticky='we', ipady=self.root.pad)
+            .grid(row=14, column=0, sticky='we',
+                  padx=self.root.halfpad, pady=self.root.pad)
         tk.Button(frame2, text="❌", fg='red', font=self.root.font_medium,
                   command=self.cancel) \
-            .grid(row=12, column=1, sticky='we', ipady=self.root.pad)
+            .grid(row=14, column=1, sticky='we',
+                  pady=self.root.pad)
 
     def submit(self):
         input_values = {
