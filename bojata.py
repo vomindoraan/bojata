@@ -76,7 +76,7 @@ def task():
 
         # Read the upcoming line and check if it's a valid RGB message
         line = serial.readline().decode('utf8')
-        logging.debug("%sbuffer: %d", line, serial.in_waiting)
+        logging.debug("readline: %-18r  in_waiting: %d", line, serial.in_waiting)
         if m := RGB_PATTERN.match(line):
             r, g, b, i, pf = m.groups()
             r, g, b = map(int, (r, g, b))

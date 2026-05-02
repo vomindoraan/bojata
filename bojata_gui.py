@@ -268,8 +268,8 @@ class TableFrame(BojataFrame):
                    padx=self.root.pad, pady=self.root.pad)
 
         df = bojata_db.Color.empty_data()
-        self.table = Table(frame, dataframe=df, maxcellwidth=200)
-        self.table.drawSelectedRow = lambda: None  # Disable selected row highlighting
+        self.table = Table(frame, dataframe=df, maxcellwidth=225,
+                           rowselectedcolor=None, colselectedcolor=None)
         self.table.show()
 
         tk.Button(self, text="NAZAD", font=self.root.font_medium,
@@ -283,11 +283,8 @@ class TableFrame(BojataFrame):
 
         # Color cells in hex column based on values
         if not df.empty:
-            self.table.setRowColors(rows=0, cols=[0], clr='white')
-            for row in range(df.shape[0]):
-                col = bojata_db.Color.label_of(bojata_db.Color.hex, annotated=False)
-                color = df.at[row, col]
-                self.table.rowcolors[col][row] = color
+            col = bojata_db.Color.label_of(bojata_db.Color.hex, annotated=False)
+            self.table.setColorByMask(col, pd.Series(), df[col])
 
         self.table.redraw()
 

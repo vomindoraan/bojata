@@ -37,7 +37,7 @@ using namespace std::literals::chrono_literals;
 #define SENSOR_S3  6
 #define SENSOR_OUT 7
 
-// Sensor frequency bounds
+// Color frequency bounds
 #define R_MIN 5000  //  600  3000  5000
 #define R_MAX 1000  //   80  1200  1000
 #define G_MIN 6000  //  750  4000  6000

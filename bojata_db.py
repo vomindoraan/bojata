@@ -17,12 +17,12 @@ class Base(DeclarativeBase):
 class LabelsMeta(type(Base)):
     def __init__(cls, name, bases, attrs):
         super().__init__(name, bases, attrs)
-        cls.__labels__ = {c.name: c.doc for c in cls.__table__.columns}
+        cls.__labels__ = {c.name: c.doc for c in cls.__table__.columns if c.doc}
 
     def label_of(cls, column: str | Column | Mapped, annotated=True):
         col = getattr(column, 'name', column)
         label = cls.__labels__[col]
-        if annotated:
+        if label and annotated:
             label = label.upper()
             if not cls.__table__.columns[col].nullable:
                 label += " ⁽*⁾"
@@ -46,9 +46,9 @@ class ColorCategory(enum.Enum):
 class Color(Base, metaclass=LabelsMeta):
     __tablename__ = 'color'
 
-    id       = Column(Integer,     primary_key=True, doc="ID")
-    author   = Column(String(50),  nullable=False,   doc="Ime autora")
-    hex      = Column(String(7),   nullable=False,   doc="Kôd boje")
+    id       = Column(Integer,     primary_key=True)
+    author   = Column(String(50),  nullable=False,   doc="Autor")
+    hex      = Column(String(7),   nullable=False,   doc="Boja")
     name     = Column(String(50),                    doc="Naziv boje")
     category = Column(Enum(ColorCategory),           doc="Kategorija boje")
     object   = Column(String(50),                    doc="Skenirani predmet / Broj kasete")
@@ -61,7 +61,8 @@ class Color(Base, metaclass=LabelsMeta):
         if column_mapping is None:
             column_mapping = cls.__labels__
         columns = column_mapping.keys()
-        df = pd.read_sql_table(cls.__tablename__, engine, columns=columns, parse_dates=['datetime'])
+        df = pd.read_sql_table(cls.__tablename__, engine,
+                               columns=columns, parse_dates=['datetime'])
         df.rename(columns=column_mapping, inplace=True)
         return df
 
