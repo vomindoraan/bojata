@@ -1,12 +1,18 @@
 import enum
+from datetime import datetime
 
 import pandas as pd
 from sqlalchemy import Column, Enum, Integer, String, create_engine
-from sqlalchemy.orm import DeclarativeBase, Session, Mapped
+from sqlalchemy.orm import DeclarativeBase, Session, Mapped, validates
+from sqlalchemy.dialects.sqlite import DATETIME
 
 
 DB_URL = 'sqlite:///data/bojata.db'
+
 DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+DateTime = DATETIME(
+    storage_format='%(year)04d-%(month)02d-%(day)02d %(hour)02d:%(minute)02d:%(second)02d',
+)
 
 engine = None
 
@@ -54,8 +60,9 @@ class Color(Base, metaclass=LabelsMeta):
     category = Column(Enum(ColorCategory),           doc="Kategorija boje")
     object   = Column(String(50),                    doc="Skenirani predmet / Broj kasete")
     comment  = Column(String(250),                   doc="Komentar")
-    location = Column(String(72),                    doc="Mesto")
-    datetime = Column(String(20),  nullable=False,   doc="Datum i vreme")
+    location = Column(String(72),  nullable=False,   doc="Mesto")
+    datetime = Column(DateTime,    nullable=False,   doc="Datum i vreme")
+
 
     @classmethod
     def read_data(cls, column_mapping=None):
@@ -72,6 +79,10 @@ class Color(Base, metaclass=LabelsMeta):
         if column_mapping is None:
             column_mapping = cls.__labels__
         return pd.DataFrame(columns=column_mapping.values())
+
+    @validates('datetime')
+    def validate_datetime(self, key, value):
+        return datetime.strptime(value, DATETIME_FORMAT)
 
 
 def init():
