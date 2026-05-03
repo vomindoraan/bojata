@@ -11,7 +11,7 @@ from pandastable import Table, TableModel
 from PIL import Image, ImageDraw, ImageFont
 
 import bojata
-import bojata_db
+import bojata_db as db
 
 
 UI_FONT_NAME = 'TkDefaultFont'
@@ -114,10 +114,10 @@ class ScanFrame(BojataFrame):
         self.color_swatch = tk.Label(frame1)
         self.color_swatch.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        f = 'hex'
-        self.iv[f] = tk.StringVar(self)
-        self.il[f] = tk.Label(frame1, textvariable=self.iv[f], font=self.root.font_large)
-        self.il[f].pack(side=tk.BOTTOM)
+        c = 'hex'
+        self.iv[c] = tk.StringVar(self)
+        self.il[c] = tk.Label(frame1, textvariable=self.iv[c], font=self.root.font_large)
+        self.il[c].pack(side=tk.BOTTOM)
 
         # Right half
         frame2 = tk.Frame(self)
@@ -126,65 +126,65 @@ class ScanFrame(BojataFrame):
         frame2.columnconfigure(0, weight=1)
         frame2.columnconfigure(1, weight=1)
 
-        f = 'author'
-        self.il[f] = tk.Label(frame2, text=bojata_db.Color.label_of(f))
-        self.il[f].grid(row=0, column=0, columnspan=2, sticky='nw')
-        self.iv[f] = tk.StringVar(self)
-        self.ie[f] = tk.Entry(frame2, textvariable=self.iv[f], font=self.root.font)
-        self.ie[f].grid(row=1, column=0, columnspan=2, sticky='we',
+        c = 'author'
+        self.il[c] = tk.Label(frame2, text=db.Color.label_of(c))
+        self.il[c].grid(row=0, column=0, columnspan=2, sticky='nw')
+        self.iv[c] = tk.StringVar(self)
+        self.ie[c] = tk.Entry(frame2, textvariable=self.iv[c], font=self.root.font)
+        self.ie[c].grid(row=1, column=0, columnspan=2, sticky='we',
                         pady=self.root.halfpad)
 
-        f = 'name'
-        self.il[f] = tk.Label(frame2, text=bojata_db.Color.label_of(f))
-        self.il[f].grid(row=2, column=0, columnspan=2, sticky='nw')
-        self.iv[f] = tk.StringVar(self)
-        self.ie[f] = tk.Entry(frame2, textvariable=self.iv[f], font=self.root.font)
-        self.ie[f].grid(row=3, column=0, columnspan=2, sticky='we',
+        c = 'name'
+        self.il[c] = tk.Label(frame2, text=db.Color.label_of(c))
+        self.il[c].grid(row=2, column=0, columnspan=2, sticky='nw')
+        self.iv[c] = tk.StringVar(self)
+        self.ie[c] = tk.Entry(frame2, textvariable=self.iv[c], font=self.root.font)
+        self.ie[c].grid(row=3, column=0, columnspan=2, sticky='we',
                         pady=self.root.halfpad)
 
-        f = 'category'
-        self.il[f] = tk.Label(frame2, text=bojata_db.Color.label_of(f))
-        self.il[f].grid(row=4, column=0, columnspan=2, sticky='nw')
-        self.iv[f] = tk.StringVar(self)
-        categories = [c.value for c in bojata_db.ColorCategory]
-        self.ie[f] = tk.OptionMenu(frame2, self.iv[f], "", *categories)
-        self.ie[f].grid(row=5, column=0, columnspan=2, sticky='we',
+        c = 'category'
+        self.il[c] = tk.Label(frame2, text=db.Color.label_of(c))
+        self.il[c].grid(row=4, column=0, columnspan=2, sticky='nw')
+        self.iv[c] = tk.StringVar(self)
+        categories = [cat.value for cat in db.ColorCategory]
+        self.ie[c] = tk.OptionMenu(frame2, self.iv[c], "", *categories)
+        self.ie[c].grid(row=5, column=0, columnspan=2, sticky='we',
                         pady=self.root.halfpad)
 
-        f = 'object'
-        self.il[f] = tk.Label(frame2, text=bojata_db.Color.label_of(f))
-        self.il[f].grid(row=6, column=0, columnspan=2, sticky='nw')
-        self.iv[f] = tk.StringVar(self)
+        c = 'object'
+        self.il[c] = tk.Label(frame2, text=db.Color.label_of(c))
+        self.il[c].grid(row=6, column=0, columnspan=2, sticky='nw')
+        self.iv[c] = tk.StringVar(self)
         # objects = range(1, DRAWER_COUNT+1)
-        # self.ie[f] = tk.OptionMenu(frame2, self.iv[f], "", *objects)
-        self.ie[f] = tk.Entry(frame2, textvariable=self.iv[f], font=self.root.font)
-        self.ie[f].grid(row=7, column=0, columnspan=2, sticky='we',
+        # self.ie[c] = tk.OptionMenu(frame2, self.iv[c], "", *objects)
+        self.ie[c] = tk.Entry(frame2, textvariable=self.iv[c], font=self.root.font)
+        self.ie[c].grid(row=7, column=0, columnspan=2, sticky='we',
                         pady=self.root.halfpad)
 
-        f = 'comment'
-        self.il[f] = tk.Label(frame2, text=bojata_db.Color.label_of(f))
-        self.il[f].grid(row=8, column=0, columnspan=2, sticky='nw')
-        self.iv[f] = tk.StringVar(self)
-        self.ie[f] = tk.Entry(frame2, textvariable=self.iv[f], font=self.root.font)
-        self.ie[f].grid(row=9, column=0, columnspan=2, sticky='we',
+        c = 'comment'
+        self.il[c] = tk.Label(frame2, text=db.Color.label_of(c))
+        self.il[c].grid(row=8, column=0, columnspan=2, sticky='nw')
+        self.iv[c] = tk.StringVar(self)
+        self.ie[c] = tk.Entry(frame2, textvariable=self.iv[c], font=self.root.font)
+        self.ie[c].grid(row=9, column=0, columnspan=2, sticky='we',
                         pady=self.root.halfpad)
 
-        f = 'location'
-        self.il[f] = tk.Label(frame2, text=bojata_db.Color.label_of(f))
-        self.il[f].grid(row=10, column=0, columnspan=2, sticky='nw')
-        self.iv[f] = tk.StringVar(self, DEFAULT_LOCATION)
-        self.ie[f] = tk.Entry(frame2, textvariable=self.iv[f], font=self.root.font)
-        self.ie[f].grid(row=11, column=0, columnspan=2, sticky='we',
+        c = 'location'
+        self.il[c] = tk.Label(frame2, text=db.Color.label_of(c))
+        self.il[c].grid(row=10, column=0, columnspan=2, sticky='nw')
+        self.iv[c] = tk.StringVar(self, DEFAULT_LOCATION)
+        self.ie[c] = tk.Entry(frame2, textvariable=self.iv[c], font=self.root.font)
+        self.ie[c].grid(row=11, column=0, columnspan=2, sticky='we',
                         pady=self.root.halfpad)
 
-        f = 'datetime'
-        self.il[f] = tk.Label(frame2, text=bojata_db.Color.label_of(f))
-        self.il[f].grid(row=12, column=0, columnspan=2, sticky='nw')
-        self.iv[f] = tk.StringVar(self, datetime.now().strftime(bojata_db.DATETIME_FORMAT))
-        self.ie[f] = tk.Entry(frame2, textvariable=self.iv[f], font=self.root.font)
-        self.ie[f].grid(row=13, column=0, columnspan=2, sticky='we',
+        c = 'datetime'
+        self.il[c] = tk.Label(frame2, text=db.Color.label_of(c))
+        self.il[c].grid(row=12, column=0, columnspan=2, sticky='nw')
+        self.iv[c] = tk.StringVar(self, datetime.now().strftime(db.DATETIME_FORMAT))
+        self.ie[c] = tk.Entry(frame2, textvariable=self.iv[c], font=self.root.font)
+        self.ie[c].grid(row=13, column=0, columnspan=2, sticky='we',
                         pady=self.root.halfpad)
-        self.ie[f].bind('<Key>', lambda e: 'break')  # Read-only
+        self.ie[c].bind('<Key>', lambda e: 'break')  # Read-only
 
         tk.Button(frame2, text="✔", fg='green', font=self.root.font_medium,
                   command=self.submit) \
@@ -197,19 +197,19 @@ class ScanFrame(BojataFrame):
 
     def submit(self):
         input_values = {
-            k: v.get().strip() or None  # empty string → NULL
-            for k, v in self.iv.items()
+            c: v.get().strip() or None  # empty string → NULL
+            for c, v in self.iv.items()
         }
 
-        required_fields = ['author']
-        for f in required_fields:
-            if not input_values[f]:
-                self.ie[f].config(bg='pink')
-                return
+        required = [col.name for col in db.Color.__table__.columns if not col.nullable]
+        missing = [e for c, e in self.ie.items() if c in required and not input_values[c]]
+        if missing:
+            for e in missing:
+                e.config(bg='pink')
+            return
 
-        color = bojata_db.Color(**input_values)
-        bojata_db.persist(color)
-
+        color = db.Color(**input_values)
+        db.persist(color)
         self.print_prompt()
 
         self.root.show_frame('HomeFrame')
@@ -226,6 +226,7 @@ class ScanFrame(BojataFrame):
         if tk.messagebox.askyesno(
             None, "Boja sačuvana u bazu. Da li želite ištampati priznanicu?",
         ):
+            # TODO: Enqueue for print task instead
             bojata.start_printing(self.scanned_color, self.generate_image())
 
     def generate_image(self):
@@ -275,7 +276,7 @@ class TableFrame(BojataFrame):
         frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True,
                    padx=self.root.pad, pady=self.root.pad)
 
-        df = bojata_db.Color.empty_data()
+        df = db.Color.empty_data()
         self.table = Table(frame, dataframe=df, maxcellwidth=225,
                            rowselectedcolor=None, colselectedcolor=None)
         self.table.show()
@@ -286,12 +287,12 @@ class TableFrame(BojataFrame):
             .pack(side=tk.TOP, pady=self.root.halfpad)
 
     def on_show_frame(self, event):
-        df = bojata_db.Color.read_data()
+        df = db.Color.read_data()
         self.table.updateModel(TableModel(df))
 
         # Color cells in hex column based on values
         if not df.empty:
-            col = bojata_db.Color.label_of(bojata_db.Color.hex, annotated=False)
+            col = db.Color.label_of(db.Color.hex, annotated=False)
             self.table.setColorByMask(col, pd.Series(), df[col])
 
         self.table.redraw()
@@ -309,5 +310,5 @@ if __name__ == '__main__':
     bojata.serial_buffer_cleanup = patched_cleanup
 
     bojata.init(init_frame=home_frame.color_frame)
-    bojata_db.init()
+    db.init()
     root.mainloop()

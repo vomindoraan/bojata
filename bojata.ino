@@ -173,7 +173,7 @@ void loop() {
     // Read output frequency
     freq = pulseIn(SENSOR_OUT, LOW);
 #if DEBUG
-    Serial.print(freq); Serial.println(" ");
+    Serial.println(freq);
 #endif
     // Remap frequency to RGB888 and RGB565 ranges
     b8 = constrain(map(freq, B_MIN, B_MAX, 0, 255), 0, 255);
