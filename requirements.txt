@@ -1,6 +1,7 @@
-pandas[excel]~=2.0
+numpy~=2.4
+pandas~=2.3
 pandastable~=0.14
 pillow~=12.2
 pycups~=2.0
-pyserial==3.5
+pyserial~=3.5
 SQLAlchemy~=2.0
