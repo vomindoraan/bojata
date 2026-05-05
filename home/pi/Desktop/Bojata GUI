@@ -1,11 +1,10 @@
 [Desktop Entry]
-Name=Bojata GUI
-Comment=Na batko bojata s prozorci
-Icon=/usr/share/pixmaps/openbox.xpm
-Exec=/home/pi/bojata/bojata_gui.py
 Type=Application
-Terminal=true
-Encoding=UTF-8
-Path=/home/pi/bojata
+Name=Bojata GUI
 GenericName=Bojata GUI by K&K
+Comment=Na batko bojata s prozorci
+Icon=/usr/share/pixmaps/python3.xpm
+Path=/home/pi/bojata
+Exec=.venv/bin/python bojata_gui.py
+Terminal=true
 X-KeepTerminal=true
