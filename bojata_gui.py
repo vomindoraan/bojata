@@ -85,7 +85,7 @@ class HomeFrame(BojataFrame):
         ).pack(side=tk.TOP, expand=True, padx=self.root.halfpad)
 
         tk.Button(
-            self, text="BAZA\nBOJA", font=self.root.font_medium,
+            self, text="ARHIVA\nBOJA", font=self.root.font_medium,
             command=partial(root.show_frame, 'TableFrame'),
             padx=self.root.pad*4, pady=self.root.pad*2,
         ).pack(side=tk.TOP, expand=True, padx=self.root.halfpad)

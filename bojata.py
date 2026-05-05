@@ -137,6 +137,7 @@ def start_printing(color, img=None):
     for printer in cups.getPrinters().keys():
         title = f'bojata-{color}'
         options = {'media': 'A5'}
+        logging.debug("Printing on %s...", printer)
         cups.printFile(printer, PRINT_FILENAME, title, options)
 
 
