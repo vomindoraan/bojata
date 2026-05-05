@@ -74,18 +74,21 @@ class HomeFrame(BojataFrame):
         super().__init__(parent, root)
 
         self.color_frame = tk.Frame(self)
-        self.color_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True,
-                              padx=self.root.pad, pady=self.root.pad)
+        self.color_frame.pack(
+            side=tk.LEFT, fill=tk.BOTH, expand=True, padx=self.root.pad, pady=self.root.pad,
+        )
 
-        tk.Button(self, text="OČITAJ\nBOJU", font=self.root.font_medium,
-                  padx=self.root.pad*4, pady=self.root.pad*2,
-                  command=partial(root.show_frame, 'ScanFrame')) \
-            .pack(side=tk.TOP, expand=True, padx=self.root.halfpad)
+        tk.Button(
+            self, text="OČITAJ\nBOJU", font=self.root.font_medium,
+            command=partial(root.show_frame, 'ScanFrame'),
+            padx=self.root.pad*4, pady=self.root.pad*2,
+        ).pack(side=tk.TOP, expand=True, padx=self.root.halfpad)
 
-        tk.Button(self, text="BAZA\nBOJA", font=self.root.font_medium,
-                  padx=self.root.pad*4, pady=self.root.pad*2,
-                  command=partial(root.show_frame, 'TableFrame')) \
-            .pack(side=tk.TOP, expand=True, padx=self.root.halfpad)
+        tk.Button(
+            self, text="BAZA\nBOJA", font=self.root.font_medium,
+            command=partial(root.show_frame, 'TableFrame'),
+            padx=self.root.pad*4, pady=self.root.pad*2,
+        ).pack(side=tk.TOP, expand=True, padx=self.root.halfpad)
 
 
 class ScanFrame(BojataFrame):
@@ -109,8 +112,9 @@ class ScanFrame(BojataFrame):
 
         # Left half
         frame1 = tk.Frame(self)
-        frame1.grid(row=0, column=0, sticky='nsew',
-                    padx=self.root.pad, pady=self.root.pad)
+        frame1.grid(
+            row=0, column=0, sticky='nsew', padx=self.root.pad, pady=self.root.pad,
+        )
         self.color_swatch = tk.Label(frame1)
         self.color_swatch.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
@@ -121,26 +125,25 @@ class ScanFrame(BojataFrame):
 
         # Right half
         frame2 = tk.Frame(self)
-        frame2.grid(row=0, column=1, sticky='nsew',
-                    padx=self.root.halfpad, pady=self.root.pad)
         frame2.columnconfigure(0, weight=1)
         frame2.columnconfigure(1, weight=1)
+        frame2.grid(
+            row=0, column=1, sticky='nsew', padx=self.root.halfpad, pady=self.root.pad,
+        )
 
         c = 'author'
         self.il[c] = tk.Label(frame2, text=db.Color.label_of(c))
         self.il[c].grid(row=0, column=0, columnspan=2, sticky='nw')
         self.iv[c] = tk.StringVar(self)
         self.ie[c] = tk.Entry(frame2, textvariable=self.iv[c], font=self.root.font)
-        self.ie[c].grid(row=1, column=0, columnspan=2, sticky='we',
-                        pady=self.root.halfpad)
+        self.ie[c].grid(row=1, column=0, columnspan=2, sticky='we', pady=self.root.halfpad)
 
         c = 'name'
         self.il[c] = tk.Label(frame2, text=db.Color.label_of(c))
         self.il[c].grid(row=2, column=0, columnspan=2, sticky='nw')
         self.iv[c] = tk.StringVar(self)
         self.ie[c] = tk.Entry(frame2, textvariable=self.iv[c], font=self.root.font)
-        self.ie[c].grid(row=3, column=0, columnspan=2, sticky='we',
-                        pady=self.root.halfpad)
+        self.ie[c].grid(row=3, column=0, columnspan=2, sticky='we', pady=self.root.halfpad)
 
         c = 'category'
         self.il[c] = tk.Label(frame2, text=db.Color.label_of(c))
@@ -148,8 +151,7 @@ class ScanFrame(BojataFrame):
         self.iv[c] = tk.StringVar(self)
         categories = [cat.value for cat in db.ColorCategory]
         self.ie[c] = tk.OptionMenu(frame2, self.iv[c], "", *categories)
-        self.ie[c].grid(row=5, column=0, columnspan=2, sticky='we',
-                        pady=self.root.halfpad)
+        self.ie[c].grid(row=5, column=0, columnspan=2, sticky='we', pady=self.root.halfpad)
 
         c = 'object'
         self.il[c] = tk.Label(frame2, text=db.Color.label_of(c))
@@ -158,42 +160,36 @@ class ScanFrame(BojataFrame):
         # objects = range(1, DRAWER_COUNT+1)
         # self.ie[c] = tk.OptionMenu(frame2, self.iv[c], "", *objects)
         self.ie[c] = tk.Entry(frame2, textvariable=self.iv[c], font=self.root.font)
-        self.ie[c].grid(row=7, column=0, columnspan=2, sticky='we',
-                        pady=self.root.halfpad)
+        self.ie[c].grid(row=7, column=0, columnspan=2, sticky='we', pady=self.root.halfpad)
 
         c = 'comment'
         self.il[c] = tk.Label(frame2, text=db.Color.label_of(c))
         self.il[c].grid(row=8, column=0, columnspan=2, sticky='nw')
         self.iv[c] = tk.StringVar(self)
         self.ie[c] = tk.Entry(frame2, textvariable=self.iv[c], font=self.root.font)
-        self.ie[c].grid(row=9, column=0, columnspan=2, sticky='we',
-                        pady=self.root.halfpad)
+        self.ie[c].grid(row=9, column=0, columnspan=2, sticky='we', pady=self.root.halfpad)
 
         c = 'location'
         self.il[c] = tk.Label(frame2, text=db.Color.label_of(c))
         self.il[c].grid(row=10, column=0, columnspan=2, sticky='nw')
         self.iv[c] = tk.StringVar(self, DEFAULT_LOCATION)
         self.ie[c] = tk.Entry(frame2, textvariable=self.iv[c], font=self.root.font)
-        self.ie[c].grid(row=11, column=0, columnspan=2, sticky='we',
-                        pady=self.root.halfpad)
+        self.ie[c].grid(row=11, column=0, columnspan=2, sticky='we', pady=self.root.halfpad)
 
         c = 'datetime'
         self.il[c] = tk.Label(frame2, text=db.Color.label_of(c))
         self.il[c].grid(row=12, column=0, columnspan=2, sticky='nw')
         self.iv[c] = tk.StringVar(self, datetime.now().strftime(db.DATETIME_FORMAT))
         self.ie[c] = tk.Entry(frame2, textvariable=self.iv[c], font=self.root.font)
-        self.ie[c].grid(row=13, column=0, columnspan=2, sticky='we',
-                        pady=self.root.halfpad)
         self.ie[c].bind('<Key>', lambda e: 'break')  # Read-only
+        self.ie[c].grid(row=13, column=0, columnspan=2, sticky='we', pady=self.root.halfpad)
 
-        tk.Button(frame2, text="✔", fg='green', font=self.root.font_medium,
-                  command=self.submit) \
-            .grid(row=14, column=0, sticky='we',
-                  padx=self.root.halfpad, pady=self.root.pad)
-        tk.Button(frame2, text="❌", fg='red', font=self.root.font_medium,
-                  command=self.cancel) \
-            .grid(row=14, column=1, sticky='we',
-                  pady=self.root.pad)
+        tk.Button(
+            frame2, text="✔", fg='green', font=self.root.font_medium, command=self.submit,
+        ).grid(row=14, column=0, sticky='we', padx=self.root.halfpad, pady=self.root.pad)
+        tk.Button(
+            frame2, text="❌", fg='red', font=self.root.font_medium, command=self.cancel,
+        ).grid(row=14, column=1, sticky='we', pady=self.root.pad)
 
     def submit(self):
         input_values = {
@@ -273,18 +269,22 @@ class TableFrame(BojataFrame):
     def __init__(self, parent, root):
         super().__init__(parent, root)
         frame = tk.Frame(self)
-        frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True,
-                   padx=self.root.pad, pady=self.root.pad)
+        frame.pack(
+            side=tk.TOP, fill=tk.BOTH, expand=True, padx=self.root.pad, pady=self.root.pad
+        )
 
         df = db.Color.empty_data()
-        self.table = Table(frame, dataframe=df, maxcellwidth=225,
-                           rowselectedcolor=None, colselectedcolor=None)
+        self.table = Table(
+            frame, dataframe=df, maxcellwidth=225,
+            rowselectedcolor=None, colselectedcolor=None,  # Disable highlighting
+        )
         self.table.show()
 
-        tk.Button(self, text="NAZAD", font=self.root.font_medium,
-                  padx=self.root.pad*2, pady=self.root.pad,
-                  command=partial(root.show_frame, 'HomeFrame')) \
-            .pack(side=tk.TOP, pady=self.root.halfpad)
+        tk.Button(
+            self, text="NAZAD", font=self.root.font_medium,
+            command=partial(root.show_frame, 'HomeFrame'),
+            padx=self.root.pad*2, pady=self.root.pad,
+        ).pack(side=tk.TOP, pady=self.root.halfpad)
 
     def on_show_frame(self, event):
         df = db.Color.read_data()
