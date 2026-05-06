@@ -56,13 +56,11 @@ class BojataRoot(tk.Tk):
     def show_frame(self, name):
         self.active_frame = self.frames[name]
         self.active_frame.lift()
-        self.active_frame.event_generate('<<ShowFrame>>')
+        self.active_frame.event_generate('<<ShowFrame>>', when='now')
 
         inactive_frames = set(self.frames.values()) - {self.active_frame}
         for frame in inactive_frames:
-            frame.event_generate('<<HideFrame>>')
-
-        self.update()
+            frame.event_generate('<<HideFrame>>', when='now')
 
 
 class BojataFrame(tk.Frame):
@@ -214,6 +212,7 @@ class ScanFrame(BojataFrame):
                 e.config(bg='pink')
             return
 
+        # TODO: Add exception handling
         color = db.Color(**input_values)
         db.persist(color)
         self.print_prompt()
@@ -305,9 +304,13 @@ class TableFrame(BojataFrame):
         super().on_show_frame(event)
 
 
-if __name__ == '__main__':
+def main():
     root = BojataRoot()
     home_frame = root.frames['HomeFrame']
     bojata.init(init_frame=home_frame.color_frame)
     db.init()
     root.mainloop()
+
+
+if __name__ == '__main__':
+    main()
