@@ -45,10 +45,11 @@ class BojataRoot(tk.Tk):
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for frame_cls in (HomeFrame, ScanFrame, TableFrame):
+        for frame_cls in reversed((HomeFrame, ScanFrame, TableFrame)):
             frame = frame_cls(parent=container, root=self)
             frame.grid(row=0, column=0, sticky='nsew')
             self.frames[frame_cls.__name__] = frame
+        self.update()  # Start processing events on frames
 
         self.show_frame('HomeFrame')
 
@@ -56,6 +57,11 @@ class BojataRoot(tk.Tk):
         self.active_frame = self.frames[name]
         self.active_frame.lift()
         self.active_frame.event_generate('<<ShowFrame>>')
+
+        inactive_frames = set(self.frames.values()) - {self.active_frame}
+        for frame in inactive_frames:
+            frame.event_generate('<<HideFrame>>')
+
         self.update()
 
 
@@ -63,17 +69,28 @@ class BojataFrame(tk.Frame):
     def __init__(self, parent, root):
         super().__init__(parent)
         self.root = root
+        self.is_visible = False
         self.bind('<<ShowFrame>>', self.on_show_frame)
+        self.bind('<<HideFrame>>', self.on_hide_frame)
 
     def on_show_frame(self, event):
-        pass
+        self.is_visible = True
+        for child in self.winfo_children():
+            if isinstance(child, BojataFrame):
+                child.on_show_frame(event)
+
+    def on_hide_frame(self, event):
+        self.is_visible = False
+        for child in self.winfo_children():
+            if isinstance(child, BojataFrame):
+                child.on_hide_frame(event)
 
 
 class HomeFrame(BojataFrame):
     def __init__(self, parent, root):
         super().__init__(parent, root)
 
-        self.color_frame = tk.Frame(self)
+        self.color_frame = BojataFrame(self, root)
         self.color_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True,
                               padx=self.root.pad, pady=self.root.pad)
 
@@ -94,6 +111,7 @@ class ScanFrame(BojataFrame):
         self.scanned_color = bojata.curr_color
         self.color_swatch.config(bg=self.scanned_color)
         self.iv['hex'].set(self.scanned_color)
+        super().on_show_frame(event)
 
     def reinit_ui(self):
         for child in self.winfo_children():
@@ -284,6 +302,7 @@ class TableFrame(BojataFrame):
             self.table.setColorByMask(col, pd.Series(), df[col])
 
         self.table.redraw()
+        super().on_show_frame(event)
 
 
 if __name__ == '__main__':

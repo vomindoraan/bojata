@@ -77,7 +77,7 @@ def task():
         # Read the upcoming line and check if it's a valid RGB message
         line = serial.readline().decode('utf8')
         logging.debug("readline: %-18r  in_waiting: %d", line, serial.in_waiting)
-        if m := RGB_PATTERN.match(line):
+        if getattr(frame, 'is_visible', True) and (m := RGB_PATTERN.match(line)):
             r, g, b, i, pf = m.groups()
             r, g, b = map(int, (r, g, b))
 
@@ -91,6 +91,7 @@ def task():
             # Draw colored area
             global curr_color
             curr_color = f'#{r:02x}{g:02x}{b:02x}'
+            logging.debug("curr_color: %s", curr_color)
             canvas.create_rectangle(0, 0, canvas.draw_x, canvas.draw_y,
                                     width=0, fill=curr_color)
             frame.update()
