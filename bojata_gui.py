@@ -12,12 +12,14 @@ from PIL import Image, ImageDraw, ImageFont
 
 import bojata
 import bojata_db as db
+if bojata.LCD_ENABLED:
+    import bojata_lcd as lcd
 
 
 UI_FONT_NAME = 'TkDefaultFont'
 PRINT_TEMPLATE = 'print/template_rev0.7.png'
 
-DEFAULT_LOCATION = "Atelje 61, Novi Sad"
+DEFAULT_LOCATION = "Studio Galić, Split"
 DRAWER_COUNT = 10
 
 
@@ -307,8 +309,12 @@ class TableFrame(BojataFrame):
 def main():
     root = BojataRoot()
     home_frame = root.frames['HomeFrame']
+
     bojata.init(init_frame=home_frame.color_frame)
     db.init()
+    if bojata.LCD_ENABLED:
+        lcd.init()
+
     root.mainloop()
 
 
