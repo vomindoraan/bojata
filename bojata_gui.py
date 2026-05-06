@@ -308,14 +308,6 @@ class TableFrame(BojataFrame):
 if __name__ == '__main__':
     root = BojataRoot()
     home_frame = root.frames['HomeFrame']
-
-    # Monkey patch serial buffer cleanup to only execute when home frame is active
-    orig_cleanup = bojata.serial_buffer_cleanup
-    def patched_cleanup():
-        if root.active_frame is home_frame:
-            orig_cleanup()
-    bojata.serial_buffer_cleanup = patched_cleanup
-
     bojata.init(init_frame=home_frame.color_frame)
     db.init()
     root.mainloop()
