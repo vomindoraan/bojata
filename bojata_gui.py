@@ -94,7 +94,6 @@ class ScanFrame(BojataFrame):
         self.scanned_color = bojata.curr_color
         self.color_swatch.config(bg=self.scanned_color)
         self.iv['hex'].set(self.scanned_color)
-        self.update()
 
     def reinit_ui(self):
         for child in self.winfo_children():
