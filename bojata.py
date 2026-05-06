@@ -16,7 +16,8 @@ logging.basicConfig(format='[%(levelname)s] %(asctime)s - %(message)s',
                     level=os.getenv('LOGLEVEL', 'INFO').upper())
 
 SERIAL_BAUD_RATE = 115200
-SERIAL_BUFFER_LIMIT = 14  # Around 1 whole RGB message (reached in ~4 mins of runtime on RPi 4)
+SERIAL_BUFFER_SOFT_LIMIT = 14  # Around 1 whole RGB message (reached in ~4 mins on RPi 4)
+SERIAL_BUFFER_HARD_LIMIT = 42
 TASK_DELAY = 10
 RECONNECT_DELAY = 1000
 PRINT_DELAY = 10000
@@ -57,6 +58,9 @@ def serial_connect():
 
 
 def serial_buffer_cleanup():
+    if serial.in_waiting > SERIAL_BUFFER_HARD_LIMIT:
+        reinit_canvas()
+
     logging.info("Discarding %d buffered bytes", serial.in_waiting)
     serial.reset_input_buffer()
     # os.execv(sys.executable, ['python'] + sys.argv)  # HACK
@@ -71,7 +75,7 @@ def task():
             serial_connect()
 
         # Clean up buffered bytes if they are arriving too quickly
-        if serial.in_waiting > SERIAL_BUFFER_LIMIT:
+        if serial.in_waiting > SERIAL_BUFFER_SOFT_LIMIT:
             serial_buffer_cleanup()
 
         # Read the upcoming line and check if it's a valid RGB message
@@ -113,6 +117,16 @@ def task():
         logging.warning("Serial device disconnected! Retrying in %g s...",
                         RECONNECT_DELAY / 1000)
         frame.after(RECONNECT_DELAY, task)
+
+
+def reinit_canvas(curr_canvas: tk.Canvas = None):
+    global canvas, frame
+    assert frame is not None
+    logging.debug("%snitializing canvas", "Rei" if curr_canvas is not None else "I")
+    if curr_canvas:
+        canvas.destroy()
+    canvas = tk.Canvas(frame, borderwidth=0, highlightthickness=0)
+    canvas.pack(fill=tk.BOTH, expand=True)
 
 
 def create_outlined_text(x, y, *args, **kw):
@@ -181,11 +195,8 @@ def init(*, init_serial: Serial = None, init_cups: CupsConnection = None,
         frame.update()
         tk.font.nametofont('TkDefaultFont').configure(size=36)
 
-    # Create canvas in which colors will be drawn
-    global canvas
-    canvas = tk.Canvas(frame, borderwidth=0, highlightthickness=0)
-    canvas.pack(fill=tk.BOTH, expand=True)
-    # Draw RGB swatches on the right edge
+    # Create canvas and draw RGB swatches on its right edge
+    reinit_canvas()
     w, h = frame.winfo_width(), frame.winfo_height()
     w_color, w_rgb, h_rgb = swatch_bounds(w, h)
     for i, sc in enumerate(SWATCH_COLORS):
