@@ -54,7 +54,7 @@ class BojataRoot(tk.Tk):
 
     def show_frame(self, name):
         self.active_frame = self.frames[name]
-        self.active_frame.tkraise()
+        self.active_frame.lift()
         self.active_frame.event_generate('<<ShowFrame>>')
         self.update()
 
@@ -266,7 +266,7 @@ class TableFrame(BojataFrame):
                    padx=self.root.pad, pady=self.root.pad)
 
         df = db.Color.empty_data()
-        self.table = Table(frame, dataframe=df, maxcellwidth=225,
+        self.table = Table(frame, dataframe=df, maxcellwidth=200,
                            rowselectedcolor=None, colselectedcolor=None)
         self.table.show()
 
