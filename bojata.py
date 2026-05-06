@@ -15,9 +15,14 @@ from serial.tools.list_ports import comports
 logging.basicConfig(format='[%(levelname)s] %(asctime)s - %(message)s',
                     level=os.getenv('LOGLEVEL', 'INFO').upper())
 
+TRUTHY = {'1', 'y', 'yes', 'true'}
+PRINT_ENABLED = bool(os.getenv('PRINT_ENABLED', '1').lower() in TRUTHY)
+LCD_ENABLED = bool(os.getenv('LCD_ENABLED', '1').lower() in TRUTHY)
+
 SERIAL_BAUD_RATE = 115200
 SERIAL_BUFFER_LIMIT = 14  # Around 1 whole RGB message (reached in ~4 mins of runtime on RPi 4)
 TASK_DELAY = 10
+LCD_DELAY = 500
 RECONNECT_DELAY = 1000
 PRINT_DELAY = 10000
 
@@ -25,7 +30,6 @@ PRINT_FLAG = '@'
 RGB_PATTERN = re.compile(fr'(\d+),(\d+),(\d+)(?:;(\d+))?({PRINT_FLAG})?\r?\n')  # R,G,B[;I]["@"]
 COMPORT_PATTERN = re.compile(r'/dev/ttyACM\d+|COM\d+')
 
-PRINT_ENABLED = bool(os.getenv('PRINT_ENABLED', '1').lower() in {'1', 'y', 'yes', 'true'})
 PRINT_FONT_NAME = '/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf'
 PRINT_FONT = ImageFont.truetype(PRINT_FONT_NAME, 24)
 PRINT_FONT_LARGE = ImageFont.truetype(PRINT_FONT_NAME, 96)
@@ -38,7 +42,7 @@ serial:     Serial
 cups:       CupsConnection | None
 frame:      tk.Frame | tk.Tk
 canvas:     tk.Canvas
-curr_color: str
+curr_color: str | None
 
 # Canvas item IDs
 _color_rect:    int
@@ -199,6 +203,9 @@ def init(*, init_serial: Serial = None, init_cups: CupsConnection = None,
                                         justify=tk.CENTER, fill='black')
     _status_text = canvas.create_text(cx, cy, text="",
                                       justify=tk.CENTER, fill='white')
+
+    global curr_color
+    curr_color = None
 
     frame.after(TASK_DELAY, task)  # Schedule first task
 
