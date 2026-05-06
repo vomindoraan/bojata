@@ -40,6 +40,11 @@ frame:      tk.Frame | tk.Tk
 canvas:     tk.Canvas
 curr_color: str
 
+# Canvas item IDs
+_color_rect:    int
+_status_text:   int
+_status_shadow: int
+
 
 def serial_connect():
     """Open a serial connection on the first available matching port."""
@@ -59,7 +64,6 @@ def serial_connect():
 def serial_buffer_cleanup():
     logging.info("Discarding %d buffered bytes", serial.in_waiting)
     serial.reset_input_buffer()
-    # os.execv(sys.executable, ['python'] + sys.argv)  # HACK
 
 
 def task():
@@ -74,9 +78,10 @@ def task():
         if serial.in_waiting > SERIAL_BUFFER_LIMIT:
             serial_buffer_cleanup()
 
-        # Read the upcoming line and check if it's a valid RGB message
+        # Read the incoming line and check if it's a valid RGB message
         line = serial.readline().decode('utf8')
         logging.debug("readline: %-18r  in_waiting: %d", line, serial.in_waiting)
+        # Only process RGB messages if visible (in case of multiple frames; see bojata_gui)
         if getattr(frame, 'is_visible', True) and (m := RGB_PATTERN.match(line)):
             r, g, b, i, pf = m.groups()
             r, g, b = map(int, (r, g, b))
@@ -92,16 +97,13 @@ def task():
             global curr_color
             curr_color = f'#{r:02x}{g:02x}{b:02x}'
             logging.debug("curr_color: %s", curr_color)
-            canvas.create_rectangle(0, 0, canvas.draw_x, canvas.draw_y,
-                                    width=0, fill=curr_color)
-            frame.update()
+            canvas.itemconfig(_color_rect, fill=curr_color)
 
             # If print flag is present, start printing the color
+            _set_status("")
             if pf is not None and PRINT_ENABLED:
                 assert pf == PRINT_FLAG and cups is not None
-                create_outlined_text(canvas.draw_x/2, canvas.draw_y/2,
-                                     text=f"Printing...\n{curr_color}")
-                frame.update()
+                _set_status(f"Printing...\n{curr_color}")
                 frame.after(0, start_printing, curr_color)
                 frame.after(PRINT_DELAY, task)
                 return
@@ -115,12 +117,10 @@ def task():
         frame.after(RECONNECT_DELAY, task)
 
 
-def create_outlined_text(x, y, *args, **kw):
-    """Draw white-on-black outlined text."""
-    kw['fill'] = 'black'
-    canvas.create_text(x+2, y+2, *args, **kw)
-    kw['fill'] = 'white'
-    canvas.create_text(x, y, *args, **kw)
+def _set_status(text):
+    global canvas
+    canvas.itemconfig(_status_shadow, text=text)
+    canvas.itemconfig(_status_text, text=text)
 
 
 # TODO: Add x, y, w, h as parameters
@@ -182,17 +182,23 @@ def init(*, init_serial: Serial = None, init_cups: CupsConnection = None,
         tk.font.nametofont('TkDefaultFont').configure(size=36)
 
     # Create canvas in which colors will be drawn
-    global canvas
+    global canvas, _color_rect, _status_text, _status_shadow
     canvas = tk.Canvas(frame, borderwidth=0, highlightthickness=0)
     canvas.pack(fill=tk.BOTH, expand=True)
-    # Draw RGB swatches on the right edge
+    # Draw RGB swatches on the right edge (static)
     w, h = frame.winfo_width(), frame.winfo_height()
     w_color, w_rgb, h_rgb = swatch_bounds(w, h)
     for i, sc in enumerate(SWATCH_COLORS):
         canvas.create_rectangle(w_color, i*h_rgb, w, (i+1)*h_rgb,
                                 width=0, fill=sc)
-    canvas.draw_x = w_color
-    canvas.draw_y = h
+    # Create dynamic canvas items
+    cx, cy = w_color/2, h/2
+    _color_rect = canvas.create_rectangle(0, 0, w_color, h,
+                                          width=0, fill='black')
+    _status_shadow = canvas.create_text(cx+2, cy+2, text="",
+                                        justify=tk.CENTER, fill='black')
+    _status_text = canvas.create_text(cx, cy, text="",
+                                      justify=tk.CENTER, fill='white')
 
     frame.after(TASK_DELAY, task)  # Schedule first task
 
