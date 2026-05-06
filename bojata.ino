@@ -9,6 +9,10 @@ using namespace std::literals::chrono_literals;
 #   define DEBUG 0
 #endif
 
+#ifndef CALIBRATION
+#   define CALIBRATION 0
+#endif
+
 #ifndef TFT_SCREEN
 #   define TFT_SCREEN 0
 #endif
@@ -38,12 +42,12 @@ using namespace std::literals::chrono_literals;
 #define SENSOR_OUT 7
 
 // Color frequency bounds
-#define R_MIN 5000  //  600  3000  5000
-#define R_MAX 1000  //   80  1200  1000
-#define G_MIN 6000  //  750  4000  6000
-#define G_MAX 1500  //   80  1200  1500
-#define B_MIN 5000  //  600  3000  5000
-#define B_MAX 1000  //   80  1200  1000
+#define R_MIN  400  //  600  3000  5000
+#define R_MAX  220  //   80  1200  1000
+#define G_MIN  680  //  750  4000  6000
+#define G_MAX  360  //   80  1200  1500
+#define B_MIN  500  //  600  3000  5000
+#define B_MAX  300  //   80  1200  1000
 
 #if TFT_SCREEN
 // TFT_ILI9163C screen pins (+ SCLK, MOSI)
@@ -144,7 +148,7 @@ void loop() {
     digitalWrite(SENSOR_S3, LOW);
     // Read output frequency
     freq = pulseIn(SENSOR_OUT, LOW);
-#if DEBUG
+#if DEBUG || CALIBRATION
     Serial.print(freq); Serial.print(" ");
 #endif
     // Remap frequency to RGB888 and RGB565 ranges
@@ -158,7 +162,7 @@ void loop() {
     digitalWrite(SENSOR_S3, HIGH);
     // Read output frequency
     freq = pulseIn(SENSOR_OUT, LOW);
-#if DEBUG
+#if DEBUG || CALIBRATION
     Serial.print(freq); Serial.print(" ");
 #endif
     // Remap frequency to RGB888 and RGB565 ranges
@@ -172,7 +176,7 @@ void loop() {
     digitalWrite(SENSOR_S3, HIGH);
     // Read output frequency
     freq = pulseIn(SENSOR_OUT, LOW);
-#if DEBUG
+#if DEBUG || CALIBRATION
     Serial.println(freq);
 #endif
     // Remap frequency to RGB888 and RGB565 ranges
@@ -193,8 +197,10 @@ void loop() {
         strcat(rgb888, PRINT_FLAG);
     }
 #endif
+#if !CALIBRATION
     // Send RGB888 value (and potentially print flag) over serial
     Serial.println(rgb888);
+#endif
 
 #if TFT_SCREEN
     // Set RGB565 value used to paint the TFT screen
