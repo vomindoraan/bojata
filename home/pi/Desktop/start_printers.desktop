@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
-Name=Start printers
+Name=Start Printers
 Comment=(Re)start CUPS printers
 Path=/home/pi/bojata
-Exec=print/start_printers.sh
+Exec=scripts/start_printers.sh
 Terminal=true
 X-KeepTerminal=true

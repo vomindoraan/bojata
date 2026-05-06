@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=Bojata GUI
+Comment=Bojata GUI autostart
+Exec=lxterminal -e "/home/pi/bojata/scripts/run.sh 1"

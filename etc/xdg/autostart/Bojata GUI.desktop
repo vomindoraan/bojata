@@ -1,2 +1,0 @@
-[Desktop Entry]
-Exec=lxterminal -e "/bin/bash -c 'sudo nice -n -20 /home/pi/bojata/.venv/bin/python /home/pi/bojata/bojata_gui.py'"

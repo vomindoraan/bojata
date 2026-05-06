@@ -1,10 +1,10 @@
 [Desktop Entry]
 Type=Application
-Name=Bojata
-GenericName=Bojata by K&K
-Comment=Na batko bojata
+Name=Bojata GUI
+GenericName=Bojata GUI by K&K
+Comment=Na batko bojata s prozorci
 Icon=/usr/share/pixmaps/python3.xpm
 Path=/home/pi/bojata
-Exec=.venv/bin/python bojata.py
+Exec=scripts/run.sh 1
 Terminal=true
 X-KeepTerminal=true

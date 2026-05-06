@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
-Name=Config printers
+Name=Config Printers
 Comment=Configure CUPS printers
 Path=/home/pi/bojata
-Exec=print/config_printers.sh
+Exec=scripts/config_printers.sh
 Terminal=true
 X-KeepTerminal=true
