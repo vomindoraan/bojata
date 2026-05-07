@@ -117,7 +117,7 @@ def task():
 
     except (SerialException, OSError):
         serial.close()
-        logging.warning("Serial device disconnected! Retrying in %g s...",
+        logging.warning("Serial device disconnected. Retrying in %g s...",
                         RECONNECT_DELAY / 1000)
         frame.after(RECONNECT_DELAY, task)
 
@@ -169,7 +169,7 @@ def init(*, init_serial: Serial = None, init_cups: CupsConnection = None,
     global serial
     if (serial := init_serial) is None:
         serial = Serial(baudrate=SERIAL_BAUD_RATE)
-    serial_connect()
+    # serial_connect()  # Lazy serial connection, allow GUI to initialize
 
     global cups
     if (cups := init_cups) is None:
