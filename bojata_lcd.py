@@ -16,7 +16,7 @@ thread:      threading.Thread
 initialized: bool = False
 
 
-def render_color_frame(w=LCD_W, h=LCD_H, fb_filename=LCD_FB, delay=bojata.LCD_DELAY):
+def render_swatch(w=LCD_W, h=LCD_H, fb_filename=LCD_FB, delay=bojata.LCD_DELAY):
     img = Image.new(mode='RGB', size=(w, h), color='black')
     draw = ImageDraw.Draw(img)
 
@@ -41,7 +41,7 @@ def render_color_frame(w=LCD_W, h=LCD_H, fb_filename=LCD_FB, delay=bojata.LCD_DE
 
 def init():
     global thread
-    thread = threading.Thread(target=render_color_frame)
+    thread = threading.Thread(target=render_swatch)
     thread.start()
     logging.debug("Started LCD rendering thread")
 
