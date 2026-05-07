@@ -38,11 +38,12 @@ PRINT_FILENAME = 'print/print.png'
 SWATCH_COLORS = ('#ff0000', '#00ff00', '#0000ff')
 
 # Globals
-serial:     Serial
-cups:       CupsConnection | None
-frame:      tk.Frame | tk.Tk
-canvas:     tk.Canvas
-curr_color: str | None
+serial:      Serial
+cups:        CupsConnection | None
+frame:       tk.Frame | tk.Tk
+canvas:      tk.Canvas
+curr_color:  str | None
+initialized: bool = False
 
 # Canvas item IDs
 _color_rect:    int
@@ -206,6 +207,9 @@ def init(*, init_serial: Serial = None, init_cups: CupsConnection = None,
 
     global curr_color
     curr_color = None
+
+    global initialized
+    initialized = True
 
     frame.after(TASK_DELAY, task)  # Schedule first task
 
