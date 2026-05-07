@@ -1,7 +1,7 @@
-import struct
 import threading
 import time
 
+import numpy as np
 from PIL import Image, ImageDraw
 
 import bojata
@@ -32,14 +32,11 @@ def render_color_frame(w=LCD_W, h=LCD_H, fb_filename=LCD_FB, delay=bojata.LCD_DE
         # TODO: Draw hex value as text
 
         # Write raw RGB565 to framebuffer
-        raw = img.convert('RGB')
-        pixels: list[bytes] = []  # Little-endian RGB565
-        for r, g, b in raw.get_flattened_data():
-            rgb565 = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | ((b & 0xF8) >> 3)
-            pixels.append(struct.pack('H', rgb565))
-
+        pixels = np.asarray(img, dtype=np.uint16)  # shape (h, w, 3), little-endian RGB565
+        r, g, b = pixels[:, :, 0], pixels[:, :, 1], pixels[:, :, 2]
+        rgb565 = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | ((b & 0xF8) >> 3)
         with open(fb_filename, 'wb') as fb:
-            fb.write(b''.join(pixels))
+            fb.write(rgb565.astype('H').tobytes())
 
 
 def init():
