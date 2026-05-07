@@ -28,10 +28,10 @@ class LabelsMeta(type(Base)):
         super().__init__(name, bases, attrs)
         cls.__labels__ = {c.name: c.doc for c in cls.__table__.columns if c.doc}
 
-    def label_of(cls, column: str | Column | Mapped, annotated=True):
+    def label_of(cls, column: str | Column | Mapped, pretty=False):
         col = getattr(column, 'name', column)
         label = cls.__labels__[col]
-        if label and annotated:
+        if label and pretty:
             label = label.upper()
             if not cls.__table__.columns[col].nullable:
                 label += " ⁽*⁾"
