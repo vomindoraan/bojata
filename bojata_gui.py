@@ -110,7 +110,7 @@ class ScanFrame(BojataFrame):
         self.reinit_ui()
         self.scanned_color = bojata.curr_color
         self.color_swatch.config(bg=self.scanned_color)
-        self.iv['hex'].set(self.scanned_color)
+        self.iv['hex'].set(self.scanned_color or '')  # None → empty string
         super().on_show_frame(event)
 
     def reinit_ui(self):
@@ -134,6 +134,7 @@ class ScanFrame(BojataFrame):
         self.iv[c] = tk.StringVar(self)
         self.il[c] = tk.Label(frame1, textvariable=self.iv[c], font=self.root.font_large)
         self.il[c].pack(side=tk.BOTTOM)
+        self.ie[c] = self.il[c]
 
         # Right half
         frame2 = tk.Frame(self)
@@ -212,6 +213,8 @@ class ScanFrame(BojataFrame):
         if missing:
             for e in missing:
                 e.config(bg='pink')
+            if not input_values['hex']:
+                tk.messagebox.showerror(None, "BU BU SOTONO, AJ U VODU")
             return
 
         # TODO: Add exception handling
