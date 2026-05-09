@@ -18,15 +18,16 @@ thread:      threading.Thread
 initialized: bool = False
 
 
-def render_swatch(w=LCD_W, h=LCD_H, fb_filename=LCD_FB, delay=bojata.LCD_DELAY):
+def render_swatch(w=LCD_W, h=LCD_H, fb_filename=LCD_FB, delay=bojata.LCD_DELAY,
+                  get_color=lambda: bojata.curr_color, stop_if=lambda: False):
+    delay /= 1000  # ms → s
     img = Image.new(mode='RGB', size=(w, h), color='black')
     draw = ImageDraw.Draw(img)
 
-    while True:
-        time.sleep(delay / 1000)
+    while not stop_if():
+        time.sleep(delay)
 
-        color = bojata.curr_color  # TODO: Lock?
-        if color is None:
+        if (color := get_color()) is None:
             continue
 
         logger.debug("Rendering %s to LCD...", color)
