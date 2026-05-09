@@ -8,7 +8,7 @@ case "$GUI" in
 esac
 
 cd "$SRC_DIR"
-export LOGLEVEL=INFO
+export LOGLEVEL=DEBUG
 .venv/bin/python "$SRC" &
 sudo renice -n -20 -p $!  # /etc/sudoers.d/bojata
 echo '

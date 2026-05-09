@@ -16,7 +16,7 @@ logging.basicConfig(format='[%(levelname)s] %(asctime)s - %(message)s',
                     level=os.getenv('LOGLEVEL', 'INFO').upper())
 
 TRUTHY = {'1', 'y', 'yes', 'true'}
-PRINT_ENABLED = bool(os.getenv('PRINT_ENABLED', '1').lower() in TRUTHY)
+PRINT_ENABLED = bool(os.getenv('PRINT_ENABLED', '0').lower() in TRUTHY)
 LCD_ENABLED = bool(os.getenv('LCD_ENABLED', '1').lower() in TRUTHY)
 
 SERIAL_BAUD_RATE = 115200
