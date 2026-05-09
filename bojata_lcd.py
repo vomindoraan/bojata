@@ -1,3 +1,4 @@
+import logging
 import threading
 import time
 
@@ -5,8 +6,9 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 import bojata
-from bojata import logging
 
+
+logger = logging.getLogger(__name__)
 
 LCD_W, LCD_H = 480, 320
 LCD_FB = '/dev/fb1'
@@ -27,7 +29,7 @@ def render_swatch(w=LCD_W, h=LCD_H, fb_filename=LCD_FB, delay=bojata.LCD_DELAY):
         if color is None:
             continue
 
-        logging.debug("Rendering %s to LCD...", color)
+        logger.debug("Rendering %s to LCD...", color)
         bojata.draw_swatch(draw, color, x=0, y=0, w=w, h=h)
         # TODO: Draw hex value as text
 
@@ -43,7 +45,7 @@ def init():
     global thread
     thread = threading.Thread(target=render_swatch)
     thread.start()
-    logging.debug("Started LCD rendering thread")
+    logger.info("Started LCD rendering thread")
 
     global initialized
     initialized = True

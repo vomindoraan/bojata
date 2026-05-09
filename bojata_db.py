@@ -89,7 +89,7 @@ class Color(Base, metaclass=LabelsMeta):
 
 def init():
     global engine
-    engine = create_engine(DB_URL, echo=True)
+    engine = create_engine(DB_URL)
     Base.metadata.create_all(engine)
 
     global initialized

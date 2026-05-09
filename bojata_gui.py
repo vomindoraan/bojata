@@ -30,9 +30,9 @@ class BojataRoot(tk.Tk):
         self.title('Bojata GUI')
         self.geometry(f'{self.winfo_screenwidth()}x{self.winfo_screenheight()}')
         self.update()  # Update actual width and height
+
         self.attributes('-fullscreen', True)
         self.protocol('WM_DELETE_WINDOW', exit)
-
         self.pad = self.winfo_width() // 100
         self.halfpad = (0, self.pad)
 
