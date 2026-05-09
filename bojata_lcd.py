@@ -57,16 +57,17 @@ def render_swatch(*, w=LCD_W, h=LCD_H, fb_filename=LCD_FB, n_chunks=8, delay=boj
     with ThreadPoolExecutor(max_workers=n_chunks) as pool:
         # Pre-encode the first frame so the pipeline has something to start with
         futures = encode_image(img, chunk_h, n_chunks, pool)
+        last_color = None
 
         while not stop_if():
             time.sleep(delay)
 
-            if (color := get_color()) is None:
+            if (color := get_color()) is None or color == last_color:  # Use event instead?
                 continue
 
             logger.debug("Rendering %s to LCD...", color)
-            bojata.draw_swatch(draw, color, x=0, y=0, w=w, h=h)
-            # TODO: Draw hex value as text
+            bojata.draw_swatch(draw, color, x=0, y=0, w=w, h=h)  # TODO: Draw hex text?
+            last_color = color
 
             # Submit encoding of next frame while writing current frame
             next_futures = encode_image(img, chunk_h, n_chunks, pool)
