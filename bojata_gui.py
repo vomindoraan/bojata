@@ -19,7 +19,7 @@ if bojata.LCD_ENABLED:
 UI_FONT_NAME = 'TkDefaultFont'
 PRINT_TEMPLATE = 'print/template_rev0.7.png'
 
-DEFAULT_LOCATION = "Studio Galić, Split"
+DEFAULT_LOCATION = "Salon Galić, Split"
 DRAWER_COUNT = 10
 
 
@@ -29,10 +29,10 @@ class BojataRoot(tk.Tk):
 
         self.title('Bojata GUI')
         self.geometry(f'{self.winfo_screenwidth()}x{self.winfo_screenheight()}')
-        self.attributes('-fullscreen', True)
-        self.protocol('WM_DELETE_WINDOW', exit)
         self.update()  # Update actual width and height
 
+        self.attributes('-fullscreen', True)
+        self.protocol('WM_DELETE_WINDOW', exit)
         self.pad = self.winfo_width() // 100
         self.halfpad = (0, self.pad)
 
@@ -110,7 +110,7 @@ class ScanFrame(BojataFrame):
         self.reinit_ui()
         self.scanned_color = bojata.curr_color
         self.color_swatch.config(bg=self.scanned_color)
-        self.iv['hex'].set(self.scanned_color)
+        self.iv['hex'].set(self.scanned_color or '')  # None → empty string
         super().on_show_frame(event)
 
     def reinit_ui(self):
@@ -134,6 +134,7 @@ class ScanFrame(BojataFrame):
         self.iv[c] = tk.StringVar(self)
         self.il[c] = tk.Label(frame1, textvariable=self.iv[c], font=self.root.font_large)
         self.il[c].pack(side=tk.BOTTOM)
+        self.ie[c] = self.il[c]
 
         # Right half
         frame2 = tk.Frame(self)
@@ -142,21 +143,21 @@ class ScanFrame(BojataFrame):
         frame2.grid(row=0, column=1, sticky='nsew', padx=self.root.halfpad, pady=self.root.pad)
 
         c = 'author'
-        self.il[c] = tk.Label(frame2, text=db.Color.label_of(c))
+        self.il[c] = tk.Label(frame2, text=db.Color.label_of(c, pretty=True))
         self.il[c].grid(row=0, column=0, columnspan=2, sticky='nw')
         self.iv[c] = tk.StringVar(self)
         self.ie[c] = tk.Entry(frame2, textvariable=self.iv[c], font=self.root.font)
         self.ie[c].grid(row=1, column=0, columnspan=2, sticky='we', pady=self.root.halfpad)
 
         c = 'name'
-        self.il[c] = tk.Label(frame2, text=db.Color.label_of(c))
+        self.il[c] = tk.Label(frame2, text=db.Color.label_of(c, pretty=True))
         self.il[c].grid(row=2, column=0, columnspan=2, sticky='nw')
         self.iv[c] = tk.StringVar(self)
         self.ie[c] = tk.Entry(frame2, textvariable=self.iv[c], font=self.root.font)
         self.ie[c].grid(row=3, column=0, columnspan=2, sticky='we', pady=self.root.halfpad)
 
         c = 'category'
-        self.il[c] = tk.Label(frame2, text=db.Color.label_of(c))
+        self.il[c] = tk.Label(frame2, text=db.Color.label_of(c, pretty=True))
         self.il[c].grid(row=4, column=0, columnspan=2, sticky='nw')
         self.iv[c] = tk.StringVar(self)
         categories = [cat.value for cat in db.ColorCategory]
@@ -164,7 +165,7 @@ class ScanFrame(BojataFrame):
         self.ie[c].grid(row=5, column=0, columnspan=2, sticky='we', pady=self.root.halfpad)
 
         c = 'object'
-        self.il[c] = tk.Label(frame2, text=db.Color.label_of(c))
+        self.il[c] = tk.Label(frame2, text=db.Color.label_of(c, pretty=True))
         self.il[c].grid(row=6, column=0, columnspan=2, sticky='nw')
         self.iv[c] = tk.StringVar(self)
         # objects = range(1, DRAWER_COUNT+1)
@@ -173,21 +174,21 @@ class ScanFrame(BojataFrame):
         self.ie[c].grid(row=7, column=0, columnspan=2, sticky='we', pady=self.root.halfpad)
 
         c = 'comment'
-        self.il[c] = tk.Label(frame2, text=db.Color.label_of(c))
+        self.il[c] = tk.Label(frame2, text=db.Color.label_of(c, pretty=True))
         self.il[c].grid(row=8, column=0, columnspan=2, sticky='nw')
         self.iv[c] = tk.StringVar(self)
         self.ie[c] = tk.Entry(frame2, textvariable=self.iv[c], font=self.root.font)
         self.ie[c].grid(row=9, column=0, columnspan=2, sticky='we', pady=self.root.halfpad)
 
         c = 'location'
-        self.il[c] = tk.Label(frame2, text=db.Color.label_of(c))
+        self.il[c] = tk.Label(frame2, text=db.Color.label_of(c, pretty=True))
         self.il[c].grid(row=10, column=0, columnspan=2, sticky='nw')
         self.iv[c] = tk.StringVar(self, DEFAULT_LOCATION)
         self.ie[c] = tk.Entry(frame2, textvariable=self.iv[c], font=self.root.font)
         self.ie[c].grid(row=11, column=0, columnspan=2, sticky='we', pady=self.root.halfpad)
 
         c = 'datetime'
-        self.il[c] = tk.Label(frame2, text=db.Color.label_of(c))
+        self.il[c] = tk.Label(frame2, text=db.Color.label_of(c, pretty=True))
         self.il[c].grid(row=12, column=0, columnspan=2, sticky='nw')
         self.iv[c] = tk.StringVar(self, datetime.now().strftime(db.DATETIME_FORMAT))
         self.ie[c] = tk.Entry(frame2, textvariable=self.iv[c], font=self.root.font)
@@ -212,6 +213,8 @@ class ScanFrame(BojataFrame):
         if missing:
             for e in missing:
                 e.config(bg='pink')
+            if not input_values['hex']:
+                tk.messagebox.showerror(None, "BU BU SOTONO, AJ U VODU")
             return
 
         # TODO: Add exception handling
@@ -284,7 +287,7 @@ class TableFrame(BojataFrame):
                    padx=self.root.pad, pady=self.root.pad)
 
         df = db.Color.empty_data()
-        self.table = Table(frame, dataframe=df, maxcellwidth=200,
+        self.table = Table(frame, dataframe=df, maxcellwidth=225,
                            rowselectedcolor=None, colselectedcolor=None)
         self.table.show()
 
@@ -299,7 +302,7 @@ class TableFrame(BojataFrame):
 
         # Color cells in hex column based on values
         if not df.empty:
-            col = db.Color.label_of(db.Color.hex, annotated=False)
+            col = db.Color.label_of(db.Color.hex)
             self.table.setColorByMask(col, pd.Series(), df[col])
 
         self.table.redraw()

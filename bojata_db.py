@@ -2,8 +2,8 @@ import enum
 from datetime import datetime
 
 import pandas as pd
-from sqlalchemy import Column, Enum, Integer, String, create_engine
-from sqlalchemy.orm import DeclarativeBase, Session, Mapped, validates
+from sqlalchemy import Column, Engine, Enum, Integer, String, create_engine
+from sqlalchemy.orm import DeclarativeBase, Mapped, Session, validates
 from sqlalchemy.dialects.sqlite import DATETIME
 
 
@@ -14,7 +14,9 @@ DateTime = DATETIME(
     storage_format='%(year)04d-%(month)02d-%(day)02d %(hour)02d:%(minute)02d:%(second)02d',
 )
 
-engine = None
+# Globals
+engine:      Engine
+initialized: bool   = False
 
 
 class Base(DeclarativeBase):
@@ -26,10 +28,10 @@ class LabelsMeta(type(Base)):
         super().__init__(name, bases, attrs)
         cls.__labels__ = {c.name: c.doc for c in cls.__table__.columns if c.doc}
 
-    def label_of(cls, column: str | Column | Mapped, annotated=True):
+    def label_of(cls, column: str | Column | Mapped, pretty=False):
         col = getattr(column, 'name', column)
         label = cls.__labels__[col]
-        if label and annotated:
+        if label and pretty:
             label = label.upper()
             if not cls.__table__.columns[col].nullable:
                 label += " ⁽*⁾"
@@ -87,8 +89,11 @@ class Color(Base, metaclass=LabelsMeta):
 
 def init():
     global engine
-    engine = create_engine(DB_URL, echo=True)
+    engine = create_engine(DB_URL)
     Base.metadata.create_all(engine)
+
+    global initialized
+    initialized = True
 
 
 def persist(*objs):

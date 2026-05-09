@@ -1,49 +1,51 @@
-#!/usr/bin/env python3
-import struct
+import logging
 import threading
 import time
 
+import numpy as np
 from PIL import Image, ImageDraw
 
 import bojata
-from bojata import logging
 
 
-FB_DEVICE = '/dev/fb1'  # LCD4C framebuffer
+logger = logging.getLogger(__name__)
+
 LCD_W, LCD_H = 480, 320
+LCD_FB = '/dev/fb1'
 
 # Globals
-thread: threading.Thread
+thread:      threading.Thread
+initialized: bool = False
 
 
-def render_color_frame():
-    img = Image.new(mode='RGB', size=(LCD_W, LCD_H), color='black')
+def render_swatch(w=LCD_W, h=LCD_H, fb_filename=LCD_FB, delay=bojata.LCD_DELAY):
+    img = Image.new(mode='RGB', size=(w, h), color='black')
     draw = ImageDraw.Draw(img)
 
     while True:
-        time.sleep(bojata.LCD_DELAY / 1000)
+        time.sleep(delay / 1000)
 
-        color = bojata.curr_color  # Race condition?
+        color = bojata.curr_color  # TODO: Lock?
         if color is None:
             continue
 
-        logging.debug("[LCD] Rendering %s to LCD...", color)
-        bojata.draw_swatch(draw, color, x=0, y=0, w=LCD_W, h=LCD_H)
+        logger.debug("Rendering %s to LCD...", color)
+        bojata.draw_swatch(draw, color, x=0, y=0, w=w, h=h)
         # TODO: Draw hex value as text
 
         # Write raw RGB565 to framebuffer
-        raw = img.convert('RGB')
-        pixels: list[bytes] = []  # Little-endian RGB565
-        for r, g, b in raw.get_flattened_data():
-            rgb565 = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | ((b & 0xF8) >> 3)
-            pixels.append(struct.pack('H', rgb565))
-
-        with open(FB_DEVICE, 'wb') as fb:
-            fb.write(b''.join(pixels))
+        pixels = np.asarray(img, dtype=np.uint16)  # shape (h, w, 3), little-endian RGB565
+        r, g, b = pixels[:, :, 0], pixels[:, :, 1], pixels[:, :, 2]
+        rgb565 = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | ((b & 0xF8) >> 3)
+        with open(fb_filename, 'wb') as fb:
+            fb.write(rgb565.astype('H').tobytes())
 
 
 def init():
     global thread
-    thread = threading.Thread(target=render_color_frame)
+    thread = threading.Thread(target=render_swatch)
     thread.start()
-    logging.debug("[LCD] Started LCD rendering thread")
+    logger.info("Started LCD rendering thread")
+
+    global initialized
+    initialized = True

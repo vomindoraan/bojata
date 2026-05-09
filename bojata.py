@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import logging
+import logging.config
 import os
 import re
 import sys
@@ -12,11 +13,13 @@ from serial import Serial, SerialException
 from serial.tools.list_ports import comports
 
 
-logging.basicConfig(format='[%(levelname)s] %(asctime)s - %(message)s',
-                    level=os.getenv('LOGLEVEL', 'INFO').upper())
+logging.config.fileConfig('logging.conf',
+                          defaults={'loglevel': os.getenv('LOGLEVEL', 'INFO').upper()})
+logging.getLogger('sqlalchemy.engine').setLevel('INFO')
+logger = logging.getLogger(__name__)
 
 TRUTHY = {'1', 'y', 'yes', 'true'}
-PRINT_ENABLED = bool(os.getenv('PRINT_ENABLED', '1').lower() in TRUTHY)
+PRINT_ENABLED = bool(os.getenv('PRINT_ENABLED', '0').lower() in TRUTHY)
 LCD_ENABLED = bool(os.getenv('LCD_ENABLED', '1').lower() in TRUTHY)
 
 SERIAL_BAUD_RATE = 115200
@@ -38,11 +41,12 @@ PRINT_FILENAME = 'print/print.png'
 SWATCH_COLORS = ('#ff0000', '#00ff00', '#0000ff')
 
 # Globals
-serial:     Serial
-cups:       CupsConnection | None
-frame:      tk.Frame | tk.Tk
-canvas:     tk.Canvas
-curr_color: str | None
+serial:      Serial
+cups:        CupsConnection | None
+frame:       tk.Frame | tk.Tk
+canvas:      tk.Canvas
+curr_color:  str | None
+initialized: bool = False
 
 # Canvas item IDs
 _color_rect:    int
@@ -54,19 +58,19 @@ def serial_connect():
     """Open a serial connection on the first available matching port."""
     ports = [cp.device for cp in comports()]
     matching_ports = [p for p in ports if COMPORT_PATTERN.match(p)]
-    logging.debug("All available ports: %s", ports)
-    logging.debug("Matching ports: %s", matching_ports)
+    logger.debug("All available ports: %s", ports)
+    logger.debug("Matching ports: %s", matching_ports)
     if not matching_ports:
         raise SerialException("No serial device available")
 
     serial.port = matching_ports[0]
     serial.open()
-    logging.info("Connected to serial device on %s at %d baud",
+    logger.info("Connected to serial device on %s at %d baud",
                  serial.port, SERIAL_BAUD_RATE)
 
 
 def serial_buffer_cleanup():
-    logging.info("Discarding %d buffered bytes", serial.in_waiting)
+    logger.info("Discarding %d buffered bytes", serial.in_waiting)
     serial.reset_input_buffer()
 
 
@@ -84,7 +88,7 @@ def task():
 
         # Read the incoming line and check if it's a valid RGB message
         line = serial.readline().decode('utf8')
-        logging.debug("readline: %-18r  in_waiting: %d", line, serial.in_waiting)
+        logger.debug("readline: %-18r  in_waiting: %d", line, serial.in_waiting)
         # Only process RGB messages if visible (in case of multiple frames; see bojata_gui)
         if getattr(frame, 'is_visible', True) and (m := RGB_PATTERN.match(line)):
             r, g, b, i, pf = m.groups()
@@ -100,7 +104,7 @@ def task():
             # Draw colored area
             global curr_color
             curr_color = f'#{r:02x}{g:02x}{b:02x}'
-            logging.debug("curr_color: %s", curr_color)
+            logger.debug("curr_color: %s", curr_color)
             canvas.itemconfig(_color_rect, fill=curr_color)
 
             # If print flag is present, start printing the color
@@ -116,7 +120,7 @@ def task():
 
     except (SerialException, OSError):
         serial.close()
-        logging.warning("Serial device disconnected! Retrying in %g s...",
+        logger.warning("Serial device disconnected. Retrying in %g s...",
                         RECONNECT_DELAY / 1000)
         frame.after(RECONNECT_DELAY, task)
 
@@ -131,18 +135,18 @@ def _set_status(text):
 def start_printing(color, img=None):
     """Generate and print the image containing the selected color."""
     if img is None:
-        logging.debug("Generating image for %s...", color)
+        logger.debug("Generating image for %s...", color)
         img = Image.new(mode='RGB', size=(874, 1240), color='white')  # A5 @ 150 PPI
         draw = ImageDraw.Draw(img)
         draw_swatch(draw, color, x=80, y=56, w=256, h=168)
         draw.text((432, 96), text=color, font=PRINT_FONT_LARGE, fill=color)
     img.save(PRINT_FILENAME, 'PNG')
 
-    logging.info("Starting printing for %s...", color)
+    logger.info("Starting printing for %s...", color)
     for printer in cups.getPrinters().keys():
         title = f'bojata-{color}'
         options = {'media': 'A5'}
-        logging.debug("Printing on %s...", printer)
+        logger.debug("Printing on %s...", printer)
         cups.printFile(printer, PRINT_FILENAME, title, options)
 
 
@@ -168,7 +172,7 @@ def init(*, init_serial: Serial = None, init_cups: CupsConnection = None,
     global serial
     if (serial := init_serial) is None:
         serial = Serial(baudrate=SERIAL_BAUD_RATE)
-    serial_connect()
+    # serial_connect()  # Lazy serial connection, allow GUI to initialize
 
     global cups
     if (cups := init_cups) is None:
@@ -206,6 +210,9 @@ def init(*, init_serial: Serial = None, init_cups: CupsConnection = None,
 
     global curr_color
     curr_color = None
+
+    global initialized
+    initialized = True
 
     frame.after(TASK_DELAY, task)  # Schedule first task
 
