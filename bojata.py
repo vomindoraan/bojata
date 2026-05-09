@@ -86,35 +86,36 @@ def task():
         if serial.in_waiting > SERIAL_BUFFER_LIMIT:
             serial_buffer_cleanup()
 
-        # Read the incoming line and check if it's a valid RGB message
-        line = serial.readline().decode('utf8')
-        logger.debug("readline: %-18r  in_waiting: %d", line, serial.in_waiting)
-        # Only process RGB messages if visible (in case of multiple frames; see bojata_gui)
-        if getattr(frame, 'is_visible', True) and (m := RGB_PATTERN.match(line)):
-            r, g, b, i, pf = m.groups()
-            r, g, b = map(int, (r, g, b))
+        # Read the incoming line (if available) and check if it's a valid RGB message
+        if line := serial.readline().decode('utf8'):
+            logger.debug("readline: %-18r  in_waiting: %d", line, serial.in_waiting)
 
-            # If ambient light intensity is present, adjust color accordingly
-            if i is not None:
-                total = int(i) or 1
-                r = int(r / total * 255)
-                g = int(g / total * 255)
-                b = int(b / total * 255)
+            # Only process RGB messages if visible (in case of multiple frames; see bojata_gui)
+            if getattr(frame, 'is_visible', True) and (m := RGB_PATTERN.match(line)):
+                r, g, b, i, pf = m.groups()
+                r, g, b = map(int, (r, g, b))
 
-            # Draw colored area
-            global curr_color
-            curr_color = f'#{r:02x}{g:02x}{b:02x}'
-            logger.debug("curr_color: %s", curr_color)
-            canvas.itemconfig(_color_rect, fill=curr_color)
+                # If ambient light intensity is present, adjust color accordingly
+                if i is not None:
+                    total = int(i) or 1
+                    r = int(r / total * 255)
+                    g = int(g / total * 255)
+                    b = int(b / total * 255)
 
-            # If print flag is present, start printing the color
-            _set_status("")
-            if pf is not None and PRINT_ENABLED:
-                assert pf == PRINT_FLAG and cups is not None
-                _set_status(f"Printing...\n{curr_color}")
-                frame.after(0, start_printing, curr_color)
-                frame.after(PRINT_DELAY, task)
-                return
+                # Draw colored area
+                global curr_color
+                curr_color = f'#{r:02x}{g:02x}{b:02x}'
+                logger.debug("curr_color: %s", curr_color)
+                canvas.itemconfig(_color_rect, fill=curr_color)
+
+                # If print flag is present, start printing the color
+                _set_status("")
+                if pf is not None and PRINT_ENABLED:
+                    assert pf == PRINT_FLAG and cups is not None
+                    _set_status(f"Printing...\n{curr_color}")
+                    frame.after(0, start_printing, curr_color)
+                    frame.after(PRINT_DELAY, task)
+                    return
 
         frame.after(TASK_DELAY, task)
 
@@ -171,7 +172,7 @@ def init(*, init_serial: Serial = None, init_cups: CupsConnection = None,
     """
     global serial
     if (serial := init_serial) is None:
-        serial = Serial(baudrate=SERIAL_BAUD_RATE)
+        serial = Serial(baudrate=SERIAL_BAUD_RATE, timeout=0)
     # serial_connect()  # Lazy serial connection, allow GUI to initialize
 
     global cups
