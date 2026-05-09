@@ -2,7 +2,7 @@ import os
 import logging
 import threading
 import time
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import Future, ThreadPoolExecutor
 from functools import partial
 
 import numpy as np
@@ -22,31 +22,41 @@ thread:      threading.Thread
 initialized: bool = False
 
 
+def image_chunks(img: Image, size: int, count: int) -> list[np.ndarray]:
+    """Chunked view of raw RGB888 image bytes."""
+    arr = np.asarray(img)
+    return [arr[i*size : (i+1)*size] for i in range(count)]
+
+
+def encode_chunk(rows: np.ndarray) -> bytes:
+    """Convert a slice of rows to little-endian RGB565 bytes."""
+    px = rows.astype(np.uint16)
+    r, g, b = px[:, :, 0], px[:, :, 1], px[:, :, 2]
+    rgb565 = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | ((b & 0xF8) >> 3)
+    return rgb565.astype('H').tobytes()
+
+
+def encode_image(img: Image, chunk_h: int, n_chunks: int,
+                 pool: ThreadPoolExecutor = None) -> list[bytes | Future[bytes]]:
+    """Encode image as RGB565 in chunks using an optional thread pool."""
+    chunks = image_chunks(img, chunk_h, n_chunks)
+    if pool is None:
+        return [encode_chunk(c) for c in chunks]
+    else:
+        return [pool.submit(encode_chunk, c) for c in chunks]
+
+
 def render_swatch(*, w=LCD_W, h=LCD_H, fb_filename=LCD_FB, n_chunks=8, delay=bojata.LCD_DELAY,
                   stop_if=lambda: False, get_color=partial(getattr, bojata, 'curr_color')):
-
-    def image_chunks(img: Image, size: int, count: int) -> list[np.ndarray]:
-        """Chunked view of raw RGB888 image bytes"""
-        arr = np.asarray(img)
-        return [arr[i*size : (i+1)*size] for i in range(count)]
-
-    def encode_chunk(rows: np.ndarray) -> bytes:
-        """Convert a slice of rows to RGB565 bytes"""
-        px = rows.astype(np.uint16)
-        r, g, b = px[:, :, 0], px[:, :, 1], px[:, :, 2]
-        rgb565 = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | ((b & 0xF8) >> 3)
-        return rgb565.astype('H').tobytes()
-
     delay /= 1000  # ms → s
     chunk_h = h // n_chunks  # Rows per chunk
     img = Image.new(mode='RGB', size=(w, h), color='black')
     draw = ImageDraw.Draw(img)
-    chunks = image_chunks(img, chunk_h, n_chunks)  # Initial frame (all black)
 
     # Draw frame in chunks using thread pool workers
     with ThreadPoolExecutor(max_workers=n_chunks) as pool:
         # Pre-encode the first frame so the pipeline has something to start with
-        futures = [pool.submit(encode_chunk, chunk) for chunk in chunks]
+        futures = encode_image(img, chunk_h, n_chunks, pool)
 
         while not stop_if():
             time.sleep(delay)
@@ -59,11 +69,10 @@ def render_swatch(*, w=LCD_W, h=LCD_H, fb_filename=LCD_FB, n_chunks=8, delay=boj
             # TODO: Draw hex value as text
 
             # Submit encoding of next frame while writing current frame
-            chunks = image_chunks(img, chunk_h, n_chunks)
-            next_futures = [pool.submit(encode_chunk, chunk) for chunk in chunks]
+            next_futures = encode_image(img, chunk_h, n_chunks, pool)
             with open(fb_filename, 'wb') as fb:
-                for future in futures:
-                    fb.write(future.result())  # Blocks per-chunk, not all at once
+                for f in futures:
+                    fb.write(f.result())  # Blocks per-chunk, not all at once
             futures = next_futures
 
 
