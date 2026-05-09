@@ -19,7 +19,7 @@ if bojata.LCD_ENABLED:
 UI_FONT_NAME = 'TkDefaultFont'
 PRINT_TEMPLATE = 'print/template_rev0.7.png'
 
-DEFAULT_LOCATION = "Studio Galić, Split"
+DEFAULT_LOCATION = "Salon Galić, Split"
 DRAWER_COUNT = 10
 
 
@@ -29,9 +29,9 @@ class BojataRoot(tk.Tk):
 
         self.title('Bojata GUI')
         self.geometry(f'{self.winfo_screenwidth()}x{self.winfo_screenheight()}')
+        self.update()  # Update actual width and height
         self.attributes('-fullscreen', True)
         self.protocol('WM_DELETE_WINDOW', exit)
-        self.update()  # Update actual width and height
 
         self.pad = self.winfo_width() // 100
         self.halfpad = (0, self.pad)
@@ -287,7 +287,7 @@ class TableFrame(BojataFrame):
                    padx=self.root.pad, pady=self.root.pad)
 
         df = db.Color.empty_data()
-        self.table = Table(frame, dataframe=df, maxcellwidth=200,
+        self.table = Table(frame, dataframe=df, maxcellwidth=225,
                            rowselectedcolor=None, colselectedcolor=None)
         self.table.show()
 
