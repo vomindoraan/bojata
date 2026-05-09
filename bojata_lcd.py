@@ -24,10 +24,6 @@ initialized: bool = False
 
 def render_swatch(*, w=LCD_W, h=LCD_H, fb_filename=LCD_FB, n_chunks=8, delay=bojata.LCD_DELAY,
                   stop_if=lambda: False, get_color=partial(getattr, bojata, 'curr_color')):
-    chunk_h = h // n_chunks  # Rows per chunk
-    delay /= 1000  # ms → s
-    img = Image.new(mode='RGB', size=(w, h), color='black')
-    draw = ImageDraw.Draw(img)
 
     def image_chunks(img: Image, size: int, count: int) -> list[np.ndarray]:
         """Chunked view of raw RGB888 image bytes"""
@@ -41,9 +37,14 @@ def render_swatch(*, w=LCD_W, h=LCD_H, fb_filename=LCD_FB, n_chunks=8, delay=boj
         rgb565 = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | ((b & 0xF8) >> 3)
         return rgb565.astype('H').tobytes()
 
-    with ThreadPoolExecutor(max_workers=n_chunks) as pool:
-        chunks = image_chunks(img, chunk_h, n_chunks)  # Initial snapshot (all black)
+    delay /= 1000  # ms → s
+    chunk_h = h // n_chunks  # Rows per chunk
+    img = Image.new(mode='RGB', size=(w, h), color='black')
+    draw = ImageDraw.Draw(img)
+    chunks = image_chunks(img, chunk_h, n_chunks)  # Initial frame (all black)
 
+    # Draw frame in chunks using thread pool workers
+    with ThreadPoolExecutor(max_workers=n_chunks) as pool:
         # Pre-encode the first frame so the pipeline has something to start with
         futures = [pool.submit(encode_chunk, chunk) for chunk in chunks]
 
