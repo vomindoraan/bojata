@@ -25,7 +25,7 @@ LCD_ENABLED = bool(os.getenv('LCD_ENABLED', '1').lower() in TRUTHY)
 SERIAL_BAUD_RATE = 115200
 SERIAL_BUFFER_LIMIT = 14  # Around 1 whole RGB message (reached in ~4 mins of runtime on RPi 4)
 TASK_DELAY = 10
-LCD_DELAY = 500
+LCD_DELAY = 100
 RECONNECT_DELAY = 1000
 PRINT_DELAY = 10000
 
@@ -121,7 +121,7 @@ def task():
     except (SerialException, OSError):
         serial.close()
         logger.warning("Serial device disconnected. Retrying in %g s...",
-                        RECONNECT_DELAY / 1000)
+                       RECONNECT_DELAY / 1000)
         frame.after(RECONNECT_DELAY, task)
 
 
