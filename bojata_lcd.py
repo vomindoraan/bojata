@@ -1,3 +1,4 @@
+import os
 import logging
 import threading
 import time
@@ -12,8 +13,9 @@ import bojata
 
 logger = logging.getLogger(__name__)
 
-LCD_W, LCD_H = 480, 320
-LCD_FB = '/dev/fb1'
+LCD_W = int(os.getenv('LCD_W', 480))
+LCD_H = int(os.getenv('LCD_H', 320))
+LCD_FB = os.getenv('LCD_FB', '/dev/fb1')
 
 # Globals
 thread:      threading.Thread
