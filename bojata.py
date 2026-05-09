@@ -89,9 +89,7 @@ def task():
         # Read the incoming line (if available) and check if it's a valid RGB message
         if line := serial.readline().decode('utf8'):
             logger.debug("readline: %-18r  in_waiting: %d", line, serial.in_waiting)
-
-            # Only process RGB messages if visible (in case of multiple frames; see bojata_gui)
-            if getattr(frame, 'is_visible', True) and (m := RGB_PATTERN.match(line)):
+            if m := RGB_PATTERN.match(line):
                 r, g, b, i, pf = m.groups()
                 r, g, b = map(int, (r, g, b))
 
