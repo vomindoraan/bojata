@@ -3,4 +3,4 @@ Type=Application
 Name=Bojata GUI
 Comment=Bojata GUI autostart
 Path=/home/pi/bojata
-Exec=lxterminal -t KIOSK_APP -e "scripts/run.sh 1"
+Exec=lxterminal -t KIOSK_APP -e "/home/pi/bojata/scripts/run.sh 1"
