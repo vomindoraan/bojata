@@ -23,7 +23,7 @@ PRINT_ENABLED = bool(os.getenv('PRINT_ENABLED', '0').lower() in TRUTHY)
 LCD_ENABLED = bool(os.getenv('LCD_ENABLED', '1').lower() in TRUTHY)
 
 SERIAL_BAUD_RATE = 115200
-SERIAL_BUFFER_LIMIT = 14  # Around 1 whole RGB message (reached in ~4 mins of runtime on RPi 4)
+SERIAL_BUFFER_LIMIT = 14  # Around 1 whole RGB message
 TASK_DELAY = 10
 LCD_DELAY = 100
 RECONNECT_DELAY = 1000
