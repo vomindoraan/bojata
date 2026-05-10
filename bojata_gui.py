@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import sys
 import textwrap
 import tkinter as tk
 import tkinter.messagebox
@@ -12,8 +13,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 import bojata
 import bojata_db as db
-if bojata.LCD_ENABLED:
-    import bojata_lcd as lcd
+import bojata_lcd as lcd
 
 
 UI_FONT_NAME = 'TkDefaultFont'
@@ -319,6 +319,12 @@ def main():
         lcd.init()
 
     root.mainloop()
+
+
+def exit():
+    if bojata.LCD_ENABLED:
+        lcd.stop()
+    sys.exit()
 
 
 if __name__ == '__main__':

@@ -23,9 +23,9 @@ PRINT_ENABLED = bool(os.getenv('PRINT_ENABLED', '0').lower() in TRUTHY)
 LCD_ENABLED = bool(os.getenv('LCD_ENABLED', '1').lower() in TRUTHY)
 
 SERIAL_BAUD_RATE = 115200
-SERIAL_BUFFER_LIMIT = 14  # Around 1 whole RGB message (reached in ~4 mins of runtime on RPi 4)
+SERIAL_BUFFER_LIMIT = 14  # Around 1 whole RGB message
 TASK_DELAY = 10
-LCD_DELAY = 500
+LCD_DELAY = 100
 RECONNECT_DELAY = 1000
 PRINT_DELAY = 10000
 
@@ -86,42 +86,41 @@ def task():
         if serial.in_waiting > SERIAL_BUFFER_LIMIT:
             serial_buffer_cleanup()
 
-        # Read the incoming line and check if it's a valid RGB message
-        line = serial.readline().decode('utf8')
-        logger.debug("readline: %-18r  in_waiting: %d", line, serial.in_waiting)
-        # Only process RGB messages if visible (in case of multiple frames; see bojata_gui)
-        if getattr(frame, 'is_visible', True) and (m := RGB_PATTERN.match(line)):
-            r, g, b, i, pf = m.groups()
-            r, g, b = map(int, (r, g, b))
+        # Read the incoming line (if available) and check if it's a valid RGB message
+        if line := serial.readline().decode('utf8'):
+            logger.debug("readline: %-18r  in_waiting: %d", line, serial.in_waiting)
+            if m := RGB_PATTERN.match(line):
+                r, g, b, i, pf = m.groups()
+                r, g, b = map(int, (r, g, b))
 
-            # If ambient light intensity is present, adjust color accordingly
-            if i is not None:
-                total = int(i) or 1
-                r = int(r / total * 255)
-                g = int(g / total * 255)
-                b = int(b / total * 255)
+                # If ambient light intensity is present, adjust color accordingly
+                if i is not None:
+                    total = int(i) or 1
+                    r = int(r / total * 255)
+                    g = int(g / total * 255)
+                    b = int(b / total * 255)
 
-            # Draw colored area
-            global curr_color
-            curr_color = f'#{r:02x}{g:02x}{b:02x}'
-            logger.debug("curr_color: %s", curr_color)
-            canvas.itemconfig(_color_rect, fill=curr_color)
+                # Draw colored area
+                global curr_color
+                curr_color = f'#{r:02x}{g:02x}{b:02x}'
+                logger.debug("curr_color: %s", curr_color)
+                canvas.itemconfig(_color_rect, fill=curr_color)
 
-            # If print flag is present, start printing the color
-            _set_status("")
-            if pf is not None and PRINT_ENABLED:
-                assert pf == PRINT_FLAG and cups is not None
-                _set_status(f"Printing...\n{curr_color}")
-                frame.after(0, start_printing, curr_color)
-                frame.after(PRINT_DELAY, task)
-                return
+                # If print flag is present, start printing the color
+                _set_status("")
+                if pf is not None and PRINT_ENABLED:
+                    assert pf == PRINT_FLAG and cups is not None
+                    _set_status(f"Printing...\n{curr_color}")
+                    frame.after(0, start_printing, curr_color)
+                    frame.after(PRINT_DELAY, task)
+                    return
 
         frame.after(TASK_DELAY, task)
 
     except (SerialException, OSError):
         serial.close()
         logger.warning("Serial device disconnected. Retrying in %g s...",
-                        RECONNECT_DELAY / 1000)
+                       RECONNECT_DELAY / 1000)
         frame.after(RECONNECT_DELAY, task)
 
 
@@ -171,7 +170,7 @@ def init(*, init_serial: Serial = None, init_cups: CupsConnection = None,
     """
     global serial
     if (serial := init_serial) is None:
-        serial = Serial(baudrate=SERIAL_BAUD_RATE)
+        serial = Serial(baudrate=SERIAL_BAUD_RATE, timeout=0)
     # serial_connect()  # Lazy serial connection, allow GUI to initialize
 
     global cups
@@ -185,7 +184,7 @@ def init(*, init_serial: Serial = None, init_cups: CupsConnection = None,
         frame.title('Bojata')
         frame.geometry(f'{frame.winfo_screenwidth()}x{frame.winfo_screenheight()}')
         frame.attributes('-fullscreen', True)
-        frame.protocol('WM_DELETE_WINDOW', exit)
+        frame.protocol('WM_DELETE_WINDOW', sys.exit)
         frame.update()
         tk.font.nametofont('TkDefaultFont').configure(size=36)
 
