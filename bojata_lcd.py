@@ -80,8 +80,7 @@ def render_swatch(*, w=LCD_W, h=LCD_H, fb_filename=LCD_FB, n_chunks=8, delay=boj
 
 
 # For testing
-def generate_color(*, delay=bojata.TASK_DELAY,
-                   set_color=partial(setattr, bojata, 'curr_color')):
+def generate_color(*, delay=330, set_color=partial(setattr, bojata, 'curr_color')):
     import random
     delay /= 1000
 

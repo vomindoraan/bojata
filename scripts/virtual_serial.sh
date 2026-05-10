@@ -6,7 +6,7 @@ if ! command -v socat &>/dev/null; then
     exit 1
 fi
 
-DELAY=${1:-0.5}
+DELAY=${1:-0.33}
 SYMLINK=${2:-/dev/ttyACM10}
 SOCAT_LOG=$(mktemp)
 
