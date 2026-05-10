@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import sys
 import textwrap
 import tkinter as tk
 import tkinter.messagebox
@@ -319,6 +320,12 @@ def main():
         lcd.init()
 
     root.mainloop()
+
+
+def exit():
+    if bojata.LCD_ENABLED:
+        lcd.stop()
+    sys.exit()
 
 
 if __name__ == '__main__':

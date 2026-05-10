@@ -19,6 +19,7 @@ LCD_FB = os.getenv('LCD_FB', '/dev/fb1')
 
 # Globals
 thread:      threading.Thread
+stop_event:  threading.Event
 initialized: bool = False
 
 
@@ -47,7 +48,7 @@ def encode_image(img: Image, chunk_h: int, n_chunks: int,
 
 
 def render_swatch(*, w=LCD_W, h=LCD_H, fb_filename=LCD_FB, n_chunks=8, delay=bojata.LCD_DELAY,
-                  stop_if=lambda: False, get_color=partial(getattr, bojata, 'curr_color')):
+                  get_color=partial(getattr, bojata, 'curr_color')):
     delay /= 1000  # ms → s
     chunk_h = h // n_chunks  # Rows per chunk
     img = Image.new(mode='RGB', size=(w, h), color='black')
@@ -59,7 +60,8 @@ def render_swatch(*, w=LCD_W, h=LCD_H, fb_filename=LCD_FB, n_chunks=8, delay=boj
         futures = encode_image(img, chunk_h, n_chunks, pool)
         last_color = None
 
-        while not stop_if():
+        global stop_event
+        while not stop_event.is_set():
             time.sleep(delay)
 
             if (color := get_color()) is None or color == last_color:  # Use event instead?
@@ -78,12 +80,13 @@ def render_swatch(*, w=LCD_W, h=LCD_H, fb_filename=LCD_FB, n_chunks=8, delay=boj
 
 
 # For testing
-def generate_color(*, delay=bojata.TASK_DELAY, stop_if=lambda: False,
+def generate_color(*, delay=bojata.TASK_DELAY,
                    set_color=partial(setattr, bojata, 'curr_color')):
     import random
-
     delay /= 1000
-    while not stop_if():
+
+    global stop_event
+    while not stop_event.is_set():
         rand = random.randint(0, (1 << 24) - 1)
         set_color(f'#{rand:06x}')
         logger.debug("Generated %s", bojata.curr_color)
@@ -91,6 +94,9 @@ def generate_color(*, delay=bojata.TASK_DELAY, stop_if=lambda: False,
 
 
 def init():
+    global stop_event
+    stop_event = threading.Event()
+
     global thread
     thread = threading.Thread(target=render_swatch)
     thread.start()
@@ -98,3 +104,9 @@ def init():
 
     global initialized
     initialized = True
+
+
+def stop():
+    global stop_event, initialized
+    stop_event.set()
+    initialized = False

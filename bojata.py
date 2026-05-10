@@ -184,7 +184,7 @@ def init(*, init_serial: Serial = None, init_cups: CupsConnection = None,
         frame.title('Bojata')
         frame.geometry(f'{frame.winfo_screenwidth()}x{frame.winfo_screenheight()}')
         frame.attributes('-fullscreen', True)
-        frame.protocol('WM_DELETE_WINDOW', exit)
+        frame.protocol('WM_DELETE_WINDOW', sys.exit)
         frame.update()
         tk.font.nametofont('TkDefaultFont').configure(size=36)
 
