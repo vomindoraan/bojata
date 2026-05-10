@@ -2,4 +2,5 @@
 Type=Application
 Name=Bojata
 Comment=Bojata autostart
-Exec=lxterminal -e "/home/pi/bojata/scripts/run.sh 0"
+Path=/home/pi/bojata
+Exec=lxterminal -t KIOSK_APP -e "/home/pi/bojata/scripts/run.sh 0"
